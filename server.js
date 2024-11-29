@@ -2,6 +2,7 @@ require("dotenv").config({ path: "./.env" });
 const http = require("http");
 const connectDatabase = require("./configs/database");
 const app = require("./app");
+require("./models/reviewModel");
 
 const { PORT = 3500 } = process.env;
 
