@@ -1,16 +1,33 @@
 openapi: 3.0.0
 info:
-  title: AMAL API
+  title: AMAL CV Platform API
   version: 1.0.0
-  description: A back-end API for building CVs;
+  description: Comprehensive API for CV creation, user management, and professional networking
 
 servers:
   - url: https://amal-platform-api.onrender.com/
 
 paths:
+  /signup:
+    post:
+      summary: User Registration
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "201":
+          description: User created successfully
+        "400":
+          description: Validation error
+
   /login:
     post:
-      summary: User login
+      summary: User Login
       tags:
         - Authentication
       requestBody:
@@ -19,17 +36,18 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - email
+                - password
               properties:
-                role:
-                  type: string
-                  enum: [student, admin]
                 email:
                   type: string
+                  format: email
                 password:
                   type: string
       responses:
         "200":
-          description: Successful login
+          description: Login successful
           content:
             application/json:
               schema:
@@ -37,77 +55,534 @@ paths:
                 properties:
                   token:
                     type: string
+        "401":
+          description: Invalid credentials
 
-  /signup:
-    post:
-      summary: User registration
+  /users:
+    get:
+      summary: Get All Users
       tags:
-        - Authentication
+        - Users
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      summary: Create User
+      tags:
+        - Users
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                role:
-                  type: string
-                  enum: [student]
-                fname:
-                  type: string
-                lname:
-                  type: string
-                username:
-                  type: string
-                email:
-                  type: string
-                password:
-                  type: string
-                passwordConfirm:
-                  type: string
-
+              $ref: "#/components/schemas/User"
       responses:
         "201":
           description: User created
 
-  # /student:
-  #   get:
-  #     summary: get all student info [profile, courses, chats, messages, mentors]
-  #     tags:
-  #       - Student
-  #     security:
-  #       - BearerAuth: []
+  /users/{id}:
+    get:
+      summary: Get User by ID
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      summary: Update User
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: User updated
+    delete:
+      summary: Delete User
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: User deleted
 
-  #     responses:
-  #       "200":
-  #         description: Success
-  # /student/profile:
-  #   get:
-  #     summary: get student profile
-  #     tags:
-  #       - Student
-  #     security:
-  #       - BearerAuth: []
+  /cvs:
+    get:
+      summary: Get All CVs
+      tags:
+        - CVs
+      responses:
+        "200":
+          description: List of CVs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CV"
+    post:
+      summary: Create CV
+      tags:
+        - CVs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CV"
+      responses:
+        "201":
+          description: CV created
 
-  #     responses:
-  #       "200":
-  #         description: Success
-  #   put:
-  #     summary: Update student profile
-  #     tags:
-  #       - Student
-  #     security:
-  #       - BearerAuth: []
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             $ref: "#/components/schemas/CourseInput"
-  #     responses:
-  #       "200":
-  #         description: Updating done
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: "#/components/schemas/Course"
+  /cvs/{id}:
+    get:
+      summary: Get CV by ID
+      tags:
+        - CVs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: CV details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CV"
+    put:
+      summary: Update CV
+      tags:
+        - CVs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CV"
+      responses:
+        "200":
+          description: CV updated
+    delete:
+      summary: Delete CV
+      tags:
+        - CVs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: CV deleted
+
+  /templates:
+    get:
+      summary: Get All Templates
+      tags:
+        - Templates
+      responses:
+        "200":
+          description: List of Templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Template"
+    post:
+      summary: Create Template
+      tags:
+        - Templates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Template"
+      responses:
+        "201":
+          description: Template created
+
+  /templates/{id}:
+    get:
+      summary: Get Template by ID
+      tags:
+        - Templates
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Template details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Template"
+    put:
+      summary: Update Template
+      tags:
+        - Templates
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Template"
+      responses:
+        "200":
+          description: Template updated
+    delete:
+      summary: Delete Template
+      tags:
+        - Templates
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Template deleted
+
+  /reviews:
+    get:
+      summary: Get All Reviews
+      tags:
+        - Reviews
+      responses:
+        "200":
+          description: List of Reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+    post:
+      summary: Create Review
+      tags:
+        - Reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Review"
+      responses:
+        "201":
+          description: Review created
+
+  /reviews/{id}:
+    get:
+      summary: Get Review by ID
+      tags:
+        - Reviews
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Review details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+    put:
+      summary: Update Review
+      tags:
+        - Reviews
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Review"
+      responses:
+        "200":
+          description: Review updated
+    delete:
+      summary: Delete Review
+      tags:
+        - Reviews
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Review deleted
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - fname
+        - lname
+        - email
+        - password
+        - passwordConfirm
+        - role
+      properties:
+        fname:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: "^[a-zA-Z\\s'-]+$"
+        lname:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: "^\\+?\\d{10,15}$"
+
+        email:
+          type: string
+          format: email
+          unique: true
+        password:
+          type: string
+          minLength: 8
+          pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
+
+        passwordConfirm:
+          type: string
+          minLength: 8
+        role:
+          type: string
+          enum:
+            - user
+        phone:
+          type: string
+          pattern: "^\\+?\\d{10,15}$"
+        language:
+          type: string
+          enum:
+            - en
+            - ar
+
+    CV:
+      type: object
+      properties:
+        personalInfo:
+          $ref: "#/components/schemas/PersonalInfo"
+        professionalExperiences:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProfessionalExperience"
+        skills:
+          $ref: "#/components/schemas/Skills"
+        educations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Education"
+        references:
+          type: array
+          items:
+            $ref: "#/components/schemas/Reference"
+
+    PersonalInfo:
+      type: object
+      properties:
+        fname:
+          type: string
+        lname:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        headline:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: "^[a-zA-Z\\s\\'-]+$"
+        city:
+          type: string
+        country:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        nationality:
+          type: string
+        driveLicense:
+          type: string
+        civilStatus:
+          type: string
+        linkedIn:
+          type: string
+        portfolio:
+          type: string
+        description:
+          type: string
+
+    ProfessionalExperience:
+      type: object
+      required:
+        - jobTitle
+        - company
+        - startDate
+        - endDate
+        - description
+      properties:
+        jobTitle:
+          type: string
+        company:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        description:
+          type: string
+
+    Education:
+      type: object
+      properties:
+        field:
+          type: string
+        institute:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        degree:
+          type: string
+        description:
+          type: string
+        graduationDate:
+          type: string
+          format: date
+
+    Reference:
+      type: object
+      properties:
+        description:
+          type: string
+        personName:
+          type: string
+        company:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+
+    Skills:
+      type: object
+      properties:
+        description:
+          type: string
+        interests:
+          type: string
+        languages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Skill"
+        otherSkills:
+          type: array
+          items:
+            $ref: "#/components/schemas/Skill"
+
+    Skill:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        level:
+          type: integer
+          default: 100
+
+    Template:
+      type: object
+      properties:
+        content:
+          type: string
+        count:
+          type: integer
+          default: 0
+        version:
+          type: integer
+          default: 1
+        isActive:
+          type: boolean
+          default: true
+
+    Review:
+      type: object
+      required:
+        - user
+        - rating
+      properties:
+        user:
+          type: string
+          description: Reference to user ID
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        content:
+          type: string
