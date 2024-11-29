@@ -1,2 +1,4 @@
-# amal-platform-api
-A platform for Cv building
+# Amal-Platform-API
+
+[Schema UML Diagrams](./docs/Amal.pdf)
+![](./docs/schema-uml-diagrams.png)

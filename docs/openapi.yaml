@@ -1,0 +1,113 @@
+openapi: 3.0.0
+info:
+  title: AMAL API
+  version: 1.0.0
+  description: A back-end API for building CVs;
+
+servers:
+  - url: https://amal-platform-api.onrender.com/
+
+paths:
+  /login:
+    post:
+      summary: User login
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [student, admin]
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+
+  /signup:
+    post:
+      summary: User registration
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [student]
+                fname:
+                  type: string
+                lname:
+                  type: string
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                passwordConfirm:
+                  type: string
+
+      responses:
+        "201":
+          description: User created
+
+  # /student:
+  #   get:
+  #     summary: get all student info [profile, courses, chats, messages, mentors]
+  #     tags:
+  #       - Student
+  #     security:
+  #       - BearerAuth: []
+
+  #     responses:
+  #       "200":
+  #         description: Success
+  # /student/profile:
+  #   get:
+  #     summary: get student profile
+  #     tags:
+  #       - Student
+  #     security:
+  #       - BearerAuth: []
+
+  #     responses:
+  #       "200":
+  #         description: Success
+  #   put:
+  #     summary: Update student profile
+  #     tags:
+  #       - Student
+  #     security:
+  #       - BearerAuth: []
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: "#/components/schemas/CourseInput"
+  #     responses:
+  #       "200":
+  #         description: Updating done
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/Course"
