@@ -1,0 +1,129 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "amal-api",
+    "collectionId": "d392cc16-8c44-4d20-84f8-2e434e66c3af",
+    "dateExported": "2024-11-30T08:35:06.388Z",
+    "version": "1.2",
+    "folders": [
+        {
+            "_id": "a0c108c9-612c-425a-9b91-d83a23f4650c",
+            "name": "auth",
+            "containerId": "",
+            "created": "2024-11-30T06:30:21.059Z",
+            "sortNum": 5000
+        },
+        {
+            "_id": "901827ff-87d6-430d-bfc7-72a9a8c8a3de",
+            "name": "users",
+            "containerId": "",
+            "created": "2024-11-30T06:29:54.050Z",
+            "sortNum": 10000
+        },
+        {
+            "_id": "6656ef40-4ac8-4e7d-b636-7d26f7b8e99d",
+            "name": "cvs",
+            "containerId": "",
+            "created": "2024-11-30T06:30:03.115Z",
+            "sortNum": 20000
+        }
+    ],
+    "requests": [
+        {
+            "_id": "9766e1e5-2a8b-44eb-957e-2d41783c02bd",
+            "colId": "d392cc16-8c44-4d20-84f8-2e434e66c3af",
+            "containerId": "901827ff-87d6-430d-bfc7-72a9a8c8a3de",
+            "name": "getAll",
+            "url": "",
+            "method": "GET",
+            "sortNum": 10000,
+            "created": "2024-11-30T06:30:07.822Z",
+            "modified": "2024-11-30T06:30:07.822Z",
+            "headers": []
+        },
+        {
+            "_id": "0e21edb7-24b9-425d-9cd5-b96c324d5380",
+            "colId": "d392cc16-8c44-4d20-84f8-2e434e66c3af",
+            "containerId": "a0c108c9-612c-425a-9b91-d83a23f4650c",
+            "name": "login",
+            "url": "{{url}}/login",
+            "method": "POST",
+            "sortNum": 10000,
+            "created": "2024-11-30T06:30:29.422Z",
+            "modified": "2024-11-30T06:35:04.233Z",
+            "headers": []
+        },
+        {
+            "_id": "7c2cc58d-47b0-4530-ab4f-29e82dd07ece",
+            "colId": "d392cc16-8c44-4d20-84f8-2e434e66c3af",
+            "containerId": "901827ff-87d6-430d-bfc7-72a9a8c8a3de",
+            "name": "get",
+            "url": "",
+            "method": "GET",
+            "sortNum": 20000,
+            "created": "2024-11-30T06:30:09.825Z",
+            "modified": "2024-11-30T06:30:09.825Z",
+            "headers": []
+        },
+        {
+            "_id": "1ee34462-c9d0-4852-8faf-67abc85d244e",
+            "colId": "d392cc16-8c44-4d20-84f8-2e434e66c3af",
+            "containerId": "a0c108c9-612c-425a-9b91-d83a23f4650c",
+            "name": "signup",
+            "url": "",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2024-11-30T06:30:31.177Z",
+            "modified": "2024-11-30T06:30:31.178Z",
+            "headers": []
+        },
+        {
+            "_id": "087e244f-2af9-4db1-87ea-2792306482c5",
+            "colId": "d392cc16-8c44-4d20-84f8-2e434e66c3af",
+            "containerId": "901827ff-87d6-430d-bfc7-72a9a8c8a3de",
+            "name": "update",
+            "url": "",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2024-11-30T06:30:11.302Z",
+            "modified": "2024-11-30T06:30:11.302Z",
+            "headers": []
+        },
+        {
+            "_id": "9101b9b9-63dd-45b7-8a28-690079db291c",
+            "colId": "d392cc16-8c44-4d20-84f8-2e434e66c3af",
+            "containerId": "a0c108c9-612c-425a-9b91-d83a23f4650c",
+            "name": "logout",
+            "url": "",
+            "method": "POST",
+            "sortNum": 30000,
+            "created": "2024-11-30T06:30:32.631Z",
+            "modified": "2024-11-30T06:30:32.631Z",
+            "headers": []
+        },
+        {
+            "_id": "fd9d3bed-1100-478e-8431-9e14347a98e6",
+            "colId": "d392cc16-8c44-4d20-84f8-2e434e66c3af",
+            "containerId": "901827ff-87d6-430d-bfc7-72a9a8c8a3de",
+            "name": "delete",
+            "url": "",
+            "method": "GET",
+            "sortNum": 40000,
+            "created": "2024-11-30T06:30:12.799Z",
+            "modified": "2024-11-30T06:30:12.799Z",
+            "headers": []
+        },
+        {
+            "_id": "37b84ee3-a8df-40cd-93c7-d1c4ff4da864",
+            "colId": "d392cc16-8c44-4d20-84f8-2e434e66c3af",
+            "containerId": "a0c108c9-612c-425a-9b91-d83a23f4650c",
+            "name": "forgotPassword",
+            "url": "",
+            "method": "POST",
+            "sortNum": 40000,
+            "created": "2024-11-30T06:30:34.196Z",
+            "modified": "2024-11-30T06:30:34.196Z",
+            "headers": []
+        }
+    ],
+    "ref": "EvyP7wJFjFhc0TPvYpOfBPSlqGrHiNl51rQqyNRTZ9SLqALzNv7bAVl-HE62QPUOJ_uxhLOTnBjq-1iowtLMQg"
+}

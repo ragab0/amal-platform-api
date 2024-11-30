@@ -26,19 +26,13 @@ module.exports = function mainErrorController(err, req, res, next) {
     }
   }
 
-  if (process.env.NODE_ENV === "development") {
-    return res.status(err.statusCode).json({
-      [err.errs ? "results" : "result"]: err.errs || err.message,
-      status: err.status,
-      error: err,
-      errorStack: err.stack,
-    });
-  } else {
-    return res.status(err.statusCode).json({
-      [err.errs ? "results" : "result"]: err.errs || err.message,
-      status: err.status,
-    });
-  }
+  return res.status(err.statusCode).json({
+    [err.errs ? "results" : "result"]: err.errs || err.message,
+    status: err.status,
+    forDevError: process.env.NODE_ENV === "development" ? err : undefined,
+    forDevErrorStack:
+      process.env.NODE_ENV === "development" ? err.stack : undefined,
+  });
 };
 
 function handleMongodbValidationError(err) {
@@ -50,8 +44,10 @@ function handleMongodbValidationError(err) {
 }
 
 function handleMongodbDuplicateFieldsError(err) {
+  console.log(err);
   const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
-  const message = `Served value: ${value}. Please use another value!`;
+
+  const message = `Email ${value} already exists. Please use another email.`;
   return new AppError(message, 400);
 }
 
