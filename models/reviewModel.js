@@ -18,5 +18,17 @@ const reviewSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Add index for better query performance
+reviewSchema.index({ user: 1 });
+
+// Pre-find hook to automatically populate user data
+reviewSchema.pre(/^find/, function(next) {
+  this.populate({
+    path: 'user',
+    select: 'fname lname photo'
+  });
+  next();
+});
+
 const Review = mongoose.model("Review", reviewSchema);
 module.exports = Review;

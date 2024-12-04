@@ -2,373 +2,79 @@ openapi: 3.0.0
 info:
   title: AMAL CV Platform API
   version: 1.0.0
-  description: Comprehensive API for CV creation, user management, and professional networking
+  description: |
+    Comprehensive API for CV creation, user management, and professional networking.
+
+    # Authentication
+    - Most endpoints require authentication via JWT token
+    - Token is sent via HTTP-only cookie named 'jwt'
+    - Protected endpoints will return 401 if not authenticated
+    - Some endpoints require admin role (marked with 'Admin only')
+
+    # Pagination
+    List endpoints support pagination with these query parameters:
+    - page: Page number (default: 1)
+    - limit: Items per page (default: 10)
+
+    # Rate Limiting
+    - Signup: 5 requests per hour
+    - Login: 5 requests per 15 minutes
+    - Password reset: 5 requests per hour
 
 servers:
   - url: https://amal-platform-api.onrender.com/
-
-paths:
-  /signup:
-    post:
-      summary: User Registration
-      tags:
-        - Authentication
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-      responses:
-        "201":
-          description: User created successfully
-        "400":
-          description: Validation error
-
-  /login:
-    post:
-      summary: User Login
-      tags:
-        - Authentication
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - email
-                - password
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-      responses:
-        "200":
-          description: Login successful
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-        "401":
-          description: Invalid credentials
-
-  /users:
-    get:
-      summary: Get All Users
-      tags:
-        - Users
-      responses:
-        "200":
-          description: List of users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/User"
-    post:
-      summary: Create User
-      tags:
-        - Users
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-      responses:
-        "201":
-          description: User created
-
-  /users/{id}:
-    get:
-      summary: Get User by ID
-      tags:
-        - Users
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: User details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-    put:
-      summary: Update User
-      tags:
-        - Users
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/User"
-      responses:
-        "200":
-          description: User updated
-    delete:
-      summary: Delete User
-      tags:
-        - Users
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: User deleted
-
-  /cvs:
-    get:
-      summary: Get All CVs
-      tags:
-        - CVs
-      responses:
-        "200":
-          description: List of CVs
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CV"
-    post:
-      summary: Create CV
-      tags:
-        - CVs
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CV"
-      responses:
-        "201":
-          description: CV created
-
-  /cvs/{id}:
-    get:
-      summary: Get CV by ID
-      tags:
-        - CVs
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: CV details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CV"
-    put:
-      summary: Update CV
-      tags:
-        - CVs
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CV"
-      responses:
-        "200":
-          description: CV updated
-    delete:
-      summary: Delete CV
-      tags:
-        - CVs
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: CV deleted
-
-  /templates:
-    get:
-      summary: Get All Templates
-      tags:
-        - Templates
-      responses:
-        "200":
-          description: List of Templates
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Template"
-    post:
-      summary: Create Template
-      tags:
-        - Templates
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Template"
-      responses:
-        "201":
-          description: Template created
-
-  /templates/{id}:
-    get:
-      summary: Get Template by ID
-      tags:
-        - Templates
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Template details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Template"
-    put:
-      summary: Update Template
-      tags:
-        - Templates
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Template"
-      responses:
-        "200":
-          description: Template updated
-    delete:
-      summary: Delete Template
-      tags:
-        - Templates
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: Template deleted
-
-  /reviews:
-    get:
-      summary: Get All Reviews
-      tags:
-        - Reviews
-      responses:
-        "200":
-          description: List of Reviews
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Review"
-    post:
-      summary: Create Review
-      tags:
-        - Reviews
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Review"
-      responses:
-        "201":
-          description: Review created
-
-  /reviews/{id}:
-    get:
-      summary: Get Review by ID
-      tags:
-        - Reviews
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Review details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Review"
-    put:
-      summary: Update Review
-      tags:
-        - Reviews
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Review"
-      responses:
-        "200":
-          description: Review updated
-    delete:
-      summary: Delete Review
-      tags:
-        - Reviews
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: Review deleted
+  - url: http://localhost:3000
+    description: Local development
 
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt
+
   schemas:
-    User:
+    SingleResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        result:
+          type: object
+          description: The actual result object
+
+    PaginatedResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        page:
+          type: integer
+          example: 1
+        totalPages:
+          type: integer
+          example: 5
+        totalCount:
+          type: integer
+          example: 48
+        results:
+          type: array
+          items:
+            type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        message:
+          type: string
+          example: "Not authorized to perform this action"
+
+    PersonalInfo:
       type: object
       required:
         - fname
@@ -383,92 +89,87 @@ components:
           minLength: 3
           maxLength: 50
           pattern: "^[a-zA-Z\\s'-]+$"
+          example: "John"
         lname:
           type: string
           minLength: 3
           maxLength: 50
-          pattern: "^\\+?\\d{10,15}$"
-
+          pattern: "^[a-zA-Z\\s'-]+$"
+          example: "Doe"
         email:
           type: string
           format: email
-          unique: true
-        password:
-          type: string
-          minLength: 8
-          pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
-
-        passwordConfirm:
-          type: string
-          minLength: 8
-        role:
-          type: string
-          enum:
-            - user
+          maxLength: 255
+          example: "john@example.com"
         phone:
           type: string
           pattern: "^\\+?\\d{10,15}$"
-        language:
-          type: string
-          enum:
-            - en
-            - ar
-
-    CV:
-      type: object
-      properties:
-        personalInfo:
-          $ref: "#/components/schemas/PersonalInfo"
-        professionalExperiences:
-          type: array
-          items:
-            $ref: "#/components/schemas/ProfessionalExperience"
-        skills:
-          $ref: "#/components/schemas/Skills"
-        educations:
-          type: array
-          items:
-            $ref: "#/components/schemas/Education"
-        references:
-          type: array
-          items:
-            $ref: "#/components/schemas/Reference"
-
-    PersonalInfo:
-      type: object
-      properties:
-        fname:
-          type: string
-        lname:
-          type: string
-        email:
-          type: string
-        phone:
-          type: string
+          example: "+1234567890"
         headline:
           type: string
           minLength: 3
-          maxLength: 50
-          pattern: "^[a-zA-Z\\s\\'-]+$"
+          maxLength: 128
+          pattern: "^[a-zA-Z\\s'-]+$"
+          example: "Senior Software Engineer"
         city:
           type: string
+          example: "San Francisco"
         country:
           type: string
+          example: "USA"
         birthDate:
           type: string
           format: date
+          example: "1990-01-01"
         nationality:
           type: string
+          example: "American"
         driveLicense:
           type: string
+          example: "Class B"
         civilStatus:
           type: string
+          example: "Single"
         linkedIn:
           type: string
+          example: "https://linkedin.com/in/johndoe"
         portfolio:
           type: string
+          example: "https://johndoe.com"
         description:
           type: string
+          example: "Experienced software engineer with a focus on web technologies"
+
+    Education:
+      type: object
+      required:
+        - field
+        - institute
+        - degree
+        - graduationDate
+      properties:
+        field:
+          type: string
+          example: "Computer Science"
+        institute:
+          type: string
+          example: "Stanford University"
+        city:
+          type: string
+          example: "Stanford"
+        country:
+          type: string
+          example: "USA"
+        degree:
+          type: string
+          example: "Bachelor's Degree"
+        description:
+          type: string
+          example: "Graduated with honors"
+        graduationDate:
+          type: string
+          format: date
+          example: "2020-05-15"
 
     ProfessionalExperience:
       type: object
@@ -481,108 +182,493 @@ components:
       properties:
         jobTitle:
           type: string
+          example: "Senior Software Engineer"
         company:
           type: string
+          example: "Google"
         city:
           type: string
+          example: "Mountain View"
         country:
           type: string
+          example: "USA"
         startDate:
           type: string
           format: date
+          example: "2018-01-01"
         endDate:
           type: string
           format: date
+          example: "2021-12-31"
         description:
           type: string
+          example: "Led a team of 5 engineers..."
 
-    Education:
+    CV:
       type: object
       properties:
-        field:
-          type: string
-        institute:
-          type: string
-        city:
-          type: string
-        country:
-          type: string
-        degree:
-          type: string
-        description:
-          type: string
-        graduationDate:
-          type: string
-          format: date
-
-    Reference:
-      type: object
-      properties:
-        description:
-          type: string
-        personName:
-          type: string
-        company:
-          type: string
-        email:
-          type: string
-        phone:
-          type: string
-
-    Skills:
-      type: object
-      properties:
-        description:
-          type: string
-        interests:
-          type: string
-        languages:
+        personalInfo:
+          $ref: "#/components/schemas/PersonalInfo"
+        education:
           type: array
           items:
-            $ref: "#/components/schemas/Skill"
-        otherSkills:
+            $ref: "#/components/schemas/Education"
+        professionalExperience:
           type: array
           items:
-            $ref: "#/components/schemas/Skill"
-
-    Skill:
-      type: object
-      required:
-        - name
-      properties:
-        name:
-          type: string
-        level:
-          type: integer
-          default: 100
-
-    Template:
-      type: object
-      properties:
-        content:
-          type: string
-        count:
-          type: integer
-          default: 0
-        version:
-          type: integer
-          default: 1
+            $ref: "#/components/schemas/ProfessionalExperience"
+        skills:
+          type: array
+          items:
+            type: object
+            properties:
+              category:
+                type: string
+                example: "Programming Languages"
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      example: "JavaScript"
+                    level:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                      example: 90
+        references:
+          type: array
+          items:
+            type: object
+            properties:
+              description:
+                type: string
+                example: "Professional reference"
+              personName:
+                type: string
+                example: "Jane Smith"
+              company:
+                type: string
+                example: "Microsoft"
+              email:
+                type: string
+                format: email
+                example: "jane@microsoft.com"
+              phone:
+                type: string
+                pattern: "^\\+?\\d{10,15}$"
+                example: "+1234567890"
         isActive:
           type: boolean
           default: true
 
+    User:
+      type: object
+      required:
+        - fname
+        - lname
+        - email
+        - password
+        - passwordConfirm
+      properties:
+        fname:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: "^[a-zA-Z\\s'-]+$"
+          example: "John"
+        lname:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: "^[a-zA-Z\\s'-]+$"
+          example: "Doe"
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          example: "john@example.com"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>])[A-Za-z\\d!@#$%^&*(),.?\":{}|<>]{8,128}$"
+          example: "Pass123!@#"
+        passwordConfirm:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          example: "Pass123!@#"
+        role:
+          type: string
+          enum: [user, admin]
+          default: "user"
+        phone:
+          type: string
+          pattern: "^\\+?\\d{10,15}$"
+          example: "+1234567890"
+        language:
+          type: string
+          enum: [en, ar]
+          default: "en"
+        headline:
+          type: string
+          minLength: 3
+          maxLength: 128
+          pattern: "^[a-zA-Z\\s'-]+$"
+          example: "Senior Software Engineer"
+        currentPlan:
+          type: object
+          properties:
+            isFree:
+              type: boolean
+              default: true
+            startDate:
+              type: string
+              format: date-time
+            endDate:
+              type: string
+              format: date-time
+
     Review:
       type: object
       required:
-        - user
         - rating
+        - comment
       properties:
-        user:
-          type: string
-          description: Reference to user ID
         rating:
           type: integer
           minimum: 1
           maximum: 5
-        content:
+          example: 5
+        comment:
           type: string
+          example: "Excellent CV template!"
+
+paths:
+  /signup:
+    post:
+      tags: [Authentication]
+      summary: Register a new user
+      description: |
+        Create a new user account. Rate limited to 5 requests per hour.
+        A verification email will be sent to the provided email address.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fname
+                - lname
+                - email
+                - password
+                - passwordConfirm
+              properties:
+                fname:
+                  type: string
+                  example: "John"
+                  minLength: 3
+                  maxLength: 50
+                lname:
+                  type: string
+                  example: "Doe"
+                  minLength: 3
+                  maxLength: 50
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "Pass123!@#"
+                  minLength: 8
+                passwordConfirm:
+                  type: string
+                  example: "Pass123!@#"
+      responses:
+        201:
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SingleResponse"
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        429:
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /login:
+    post:
+      tags: [Authentication]
+      summary: User login
+      description: |
+        Login with email and password. Rate limited to 5 requests per 15 minutes.
+        On success, sets an HTTP-only cookie with JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "john@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "Pass123!@#"
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SingleResponse"
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: jwt=abc123; Path=/; HttpOnly; Secure; SameSite=Strict
+        401:
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        429:
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /is-login:
+    get:
+      tags: [Authentication]
+      summary: Check authentication status
+      description: Verify if the current user is logged in and get user details
+      security:
+        - cookieAuth: []
+      responses:
+        200:
+          description: User is authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SingleResponse"
+        401:
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /logout:
+    post:
+      tags: [Authentication]
+      summary: Logout user
+      description: Clear authentication cookie
+      security:
+        - cookieAuth: []
+      responses:
+        200:
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SingleResponse"
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict
+
+  /cvs:
+    get:
+      tags: [CVs]
+      summary: Get all CVs (Admin only)
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Items per page
+      responses:
+        200:
+          description: List of CVs with pagination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+        401:
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        403:
+          description: Not authorized (non-admin user)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /cvs/{cvId}:
+    parameters:
+      - name: cvId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: CV ID
+    get:
+      tags: [CVs]
+      summary: Get CV by ID
+      description: Users can only get their own CV, admins can get any CV
+      security:
+        - cookieAuth: []
+      responses:
+        200:
+          description: CV details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SingleResponse"
+        401:
+          description: Not authenticated
+        403:
+          description: Not authorized to view this CV
+        404:
+          description: CV not found
+    put:
+      tags: [CVs]
+      summary: Update CV
+      description: Users can only update their own CV, admins can update any CV
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CV"
+      responses:
+        200:
+          description: CV updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SingleResponse"
+        400:
+          description: Validation error
+        401:
+          description: Not authenticated
+        403:
+          description: Not authorized to update this CV
+        404:
+          description: CV not found
+    delete:
+      tags: [CVs]
+      summary: Deactivate CV (Admin only)
+      security:
+        - cookieAuth: []
+      responses:
+        204:
+          description: CV deactivated successfully
+        401:
+          description: Not authenticated
+        403:
+          description: Not authorized (non-admin user)
+        404:
+          description: CV not found
+
+  /reviews:
+    get:
+      tags: [Reviews]
+      summary: Get all reviews
+      description: Public endpoint - no authentication required
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Items per page
+      responses:
+        200:
+          description: List of reviews with pagination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+    post:
+      tags: [Reviews]
+      summary: Create review
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rating
+                - comment
+                - cvId
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  example: 5
+                comment:
+                  type: string
+                  example: "Excellent CV template!"
+                cvId:
+                  type: string
+                  example: "60d725c6b0c7c1a8e05e7d1c"
+      responses:
+        201:
+          description: Review created successfully
+        400:
+          description: Validation error
+        401:
+          description: Not authenticated
+        404:
+          description: CV not found

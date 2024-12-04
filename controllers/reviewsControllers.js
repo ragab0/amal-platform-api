@@ -11,10 +11,7 @@ exports.getAllReviews = catchAsyncMiddle(async (req, res) => {
 
   const totalCount = await Review.countDocuments();
   const totalPages = Math.ceil(totalCount / limit);
-  const reviews = await Review.find()
-    .populate("user", "fname lname photo")
-    .skip(skip)
-    .limit(limit);
+  const reviews = await Review.find().skip(skip).limit(limit);
   sendResults(res, reviews, page, totalPages, totalCount);
 });
 
@@ -24,12 +21,16 @@ exports.createReview = catchAsyncMiddle(async (req, res) => {
   sendResult(res, newReview, 201);
 });
 
-// Get single review - accessible by anyone
+// Users can get their own review, admins can get any review;
 exports.getReview = catchAsyncMiddle(async (req, res) => {
-  const review = await Review.findById(req.params.reviewId).populate(
-    "user",
-    "fname lname photo"
-  );
+  let review;
+  if (req.user.role === "admin") {
+    review = await Review.findById(req.params.reviewId);
+  } else {
+    review = await Review.findOne({
+      user: req.user._id,
+    });
+  }
 
   if (!review) {
     return next(new AppError("Review not found", 404));
@@ -70,7 +71,6 @@ exports.deleteReview = catchAsyncMiddle(async (req, res) => {
     review = await Review.findById(req.params.reviewId);
   } else {
     review = await Review.findOne({
-      // _id: req.params.reviewId,
       user: req.user._id,
     });
   }

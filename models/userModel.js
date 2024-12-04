@@ -26,7 +26,9 @@ const userSchema = new mongoose.Schema(
       maxlength: [50, "First name cannot exceed 50 characters."],
       validate: {
         validator: function (value) {
-          return /^[a-zA-Z\s'-]+$/.test(value);
+          return /^[\u0600-\u06FFa-zA-Z]+([\u0600-\u06FFa-zA-Z]+\s?)*[\u0600-\u06FFa-zA-Z]+$/.test(
+            value
+          );
         },
         message:
           "First name must only contain letters, spaces, hyphens, or apostrophes.",
@@ -39,7 +41,9 @@ const userSchema = new mongoose.Schema(
       maxlength: [50, "Last name cannot exceed 50 characters."],
       validate: {
         validator: function (value) {
-          return /^[a-zA-Z\s'-]+$/.test(value);
+          return /^[\u0600-\u06FFa-zA-Z]+([\u0600-\u06FFa-zA-Z]+\s?)*[\u0600-\u06FFa-zA-Z]+$/.test(
+            value
+          );
         },
         message:
           "Last name must only contain letters, spaces, hyphens, or apostrophes.",
@@ -66,10 +70,12 @@ const userSchema = new mongoose.Schema(
       maxlength: [128, "Headline cannot exceed 128 characters."],
       validate: {
         validator: function (value) {
-          return /^[a-zA-Z\s'-]+$/.test(value);
+          return /^[\u0600-\u06FFa-zA-Z]+([\u0600-\u06FFa-zA-Z]+\s_|\-?)*[\u0600-\u06FFa-zA-Z]+$/.test(
+            value
+          );
         },
         message:
-          "Headline must only contain letters, spaces, hyphens, or apostrophes.",
+          "Headline must only contain letters, on space or the symbols (_|-) between each word",
       },
     },
     password: {
@@ -79,7 +85,7 @@ const userSchema = new mongoose.Schema(
       maxlength: [128, "Password cannot exceed 128 characters."],
       validate: {
         validator: function (value) {
-          return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,128}$/.test(
+          return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d\s!@#$%^&*(),.?":{}|<>]{8,128}$/.test(
             value
           );
         },
