@@ -244,11 +244,15 @@ const isLogin = catchAsyncMiddle(async function (req = rq, res = rs) {
 // AUTH protection
 const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   let token;
+  console.log("Cookies:", { ...req.cookies });
+  console.log("Headers:", req.headers.authorization);
+
   if (req.headers.authorization?.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
   } else if (req.cookies[COOKIE_NAME]) {
     token = req.cookies[COOKIE_NAME];
   } else {
+    return sendResult(res);
     return next(new AppError("Login to get access!", 401));
   }
 

@@ -1,12 +1,10 @@
-const { NODE_ENV, FRONTEND_URL } = process.env;
-
-console.log(FRONTEND_URL);
+const { NODE_ENV } = process.env;
 
 const COOKIE_CONFIG = {
-  secure: NODE_ENV !== "development", // Must be true in production for SameSite=None
   httpOnly: true,
   secure: NODE_ENV === "production",
-  sameSite: NODE_ENV === "production" ? "None" : "Lax", // None for cross-site, must be used with secure=true
+  sameSite: NODE_ENV === "production" ? "none" : "lax", // Required for cross-origin (different domains) requests
+  domain: NODE_ENV === "development" ? "localhost" : ".amal-dev.vercel.app",
   path: "/",
 };
 

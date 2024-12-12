@@ -15,18 +15,9 @@ const cvsRoutes = require("./routes/cvsRoutes");
 const reviewsRoutes = require("./routes/reviewsRoutes");
 const templatesRoutes = require("./routes/templatesRoutes");
 const usersRoutes = require("./routes/usersRoutes");
+const { corsOptions } = require("./configs/cors");
 
 const app = express();
-const { NODE_ENV, FRONTEND_URL } = process.env;
-
-// CORS configuration
-const corsOptions = {
-  origin: FRONTEND_URL,
-  credentials: true, // This is important for cookies
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
-};
-
 app.use(cors(corsOptions));
 app.use(logger);
 app.use(express.json());
