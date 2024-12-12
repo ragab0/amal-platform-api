@@ -19,6 +19,8 @@ const usersRoutes = require("./routes/usersRoutes");
 const app = express();
 const { NODE_ENV } = process.env;
 
+// Trust proxy for proper IP detection behind reverse proxies
+app.set("trust proxy", 1);
 app.use(
   cors({
     origin:

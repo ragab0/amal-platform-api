@@ -190,7 +190,11 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   }
 
   // Check if credentials are valid
-  if (!user || !(await user.comparePassword(password, user.password))) {
+  if (
+    !user ||
+    !user.password ||
+    !(await user.comparePassword(password, user.password))
+  ) {
     if (user) {
       user.loginAttempts += 1;
       if (user.loginAttempts >= 5) {
