@@ -4,7 +4,7 @@ const COOKIE_CONFIG = {
   httpOnly: true,
   secure: NODE_ENV === "production",
   sameSite: NODE_ENV === "production" ? "none" : "lax", // Required for cross-origin (different domains) requests
-  domain: NODE_ENV === "development" ? "localhost" : ".amal-dev.vercel.app",
+  domain: NODE_ENV === "development" ? "localhost" : ".vercel.app",
   path: "/",
 };
 
