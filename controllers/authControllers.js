@@ -148,6 +148,7 @@ const verifyEmail = catchAsyncMiddle(async function (req = rq, res = rs, next) {
 // AUTH login
 const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   const { email, password } = req.body;
+  console.log("Login attempt for email:", email);
 
   if (
     !email ||
@@ -157,6 +158,7 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
     email.trim() === "" ||
     password.trim() === ""
   ) {
+    console.log("Invalid input validation:", { email, password });
     return next(
       new AppError("Please provide a valid email and password", 400, {
         email,
@@ -166,9 +168,16 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   }
 
   // Find user with all required fields
-  const user = await User.findOne({
-    email: email.toLocaleLowerCase().trim(),
-  }).select("+password +loginAttempts +lockUntil");
+  const user = await User.findOne({ email: email.toLowerCase() }).select(
+    "+password +loginAttempts +lockUntil"
+  );
+
+  console.log("User found:", user ? "yes" : "no");
+  if (user) {
+    console.log("Login attempts:", user.loginAttempts);
+    console.log("Account locked:", user.lockUntil);
+    console.log("Has password:", !!user.password);
+  }
 
   // Check if account is locked
   if (user?.lockUntil > Date.now()) {
@@ -187,6 +196,7 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
     !user.password ||
     !(await user.comparePassword(password, user.password))
   ) {
+    console.log("Password validation failed");
     if (user) {
       user.loginAttempts += 1;
       if (user.loginAttempts >= 5) {
@@ -233,6 +243,8 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   // If everything ok, send token
   const token = signToken(user);
   setCookie(res, token);
+  console.log("Login successful, token created");
+
   sendResult(res, user.getBasicInfo());
   console.log(
     `User ${user._id} logged in successfully at ${new Date().toISOString()}`
