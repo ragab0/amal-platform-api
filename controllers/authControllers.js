@@ -167,51 +167,32 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
     );
   }
 
-  // Find user with all required fields
+  // Find user with all required fields && check credentials
   const user = await User.findOne({ email: email.toLowerCase() }).select(
     "+password +loginAttempts +lockUntil"
   );
 
-  console.log("User found:", user ? "yes" : "no");
   if (user) {
-    console.log("Login attempts:", user.loginAttempts);
-    console.log("Account locked:", user.lockUntil);
-    console.log("Has password:", !!user.password);
+    user.loginAttempts += 1;
+    if (user.loginAttempts >= 5) {
+      user.loginAttempts = 0;
+      user.lockUntil = Date.now() + 1 * 60 * 1000; // 1 min
+      await user.save({ validateBeforeSave: false });
+      return next(
+        new AppError(
+          "Account locked due to too many failed attempts. Try again after 1 minue",
+          423
+        )
+      );
+    }
+    await user.save({ validateBeforeSave: false });
   }
 
-  // Check if account is locked
-  if (user?.lockUntil > Date.now()) {
-    const waitMinutes = Math.ceil((user.lockUntil - Date.now()) / 1000 / 60);
-    return next(
-      new AppError(
-        `Account is locked. Try again in ${waitMinutes} minutes`,
-        423
-      )
-    );
-  }
-
-  // Check if credentials are valid
   if (
     !user ||
     !user.password ||
     !(await user.comparePassword(password, user.password))
   ) {
-    console.log("Password validation failed");
-    if (user) {
-      user.loginAttempts += 1;
-      if (user.loginAttempts >= 5) {
-        user.loginAttempts = 0;
-        user.lockUntil = Date.now() + 0.5 * 60 * 1000; // .5 minutes
-        await user.save({ validateBeforeSave: false });
-        return next(
-          new AppError(
-            "Account locked due to too many failed attempts. Try again in .5 minutes",
-            423
-          )
-        );
-      }
-      await user.save({ validateBeforeSave: false });
-    }
     return next(new AppError("Invalid email or password", 400));
   }
 

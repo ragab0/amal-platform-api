@@ -2,6 +2,7 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const LinkedInStrategy = require("passport-linkedin-oauth2").Strategy;
 const User = require("../models/userModel");
+const Cv = require("../models/cvModel");
 
 const {
   GOOGLE_CLIENT_ID,
@@ -38,6 +39,17 @@ passport.use(
             photo: profile.photos[0].value,
           });
           await user.save({ validateBeforeSave: false });
+          // Create new CV
+          const cv = new Cv({
+            user: user._id,
+            personalInfo: {
+              fname: user.fname,
+              lname: user.lname,
+              photo: user.photo,
+              email: user.email,
+            },
+          });
+          await cv.save({ validateBeforeSave: false });
         }
 
         done(null, user);
@@ -78,6 +90,17 @@ passport.use(
             photo: profile.picture,
           });
           await user.save({ validateBeforeSave: false });
+          // Create new CV
+          const cv = new Cv({
+            user: user._id,
+            personalInfo: {
+              fname: user.fname,
+              lname: user.lname,
+              photo: user.photo,
+              email: user.email,
+            },
+          });
+          await cv.save({ validateBeforeSave: false });
         }
 
         done(null, user);

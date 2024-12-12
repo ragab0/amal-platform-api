@@ -17,17 +17,17 @@ const templatesRoutes = require("./routes/templatesRoutes");
 const usersRoutes = require("./routes/usersRoutes");
 
 const app = express();
-const { NODE_ENV } = process.env;
+const { NODE_ENV, FRONTEND_URL } = process.env;
 
-app.use(
-  cors({
-    origin:
-      NODE_ENV === "development"
-        ? ["http://localhost:3000", "http://localhost:3001"]
-        : "https://amal-dev.vercel.app",
-    credentials: true,
-  })
-);
+// CORS configuration
+const corsOptions = {
+  origin: FRONTEND_URL,
+  credentials: true, // This is important for cookies
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+};
+
+app.use(cors(corsOptions));
 app.use(logger);
 app.use(express.json());
 app.use(cookieParser());
