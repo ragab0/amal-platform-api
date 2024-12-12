@@ -9,8 +9,6 @@ const cvSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: [true, "CV must belong to a user"],
-    unique: true, // Ensure one CV per user (1:1)
   },
   isActive: {
     type: Boolean,
@@ -23,6 +21,18 @@ const cvSchema = new mongoose.Schema({
   educations: { type: [education], default: [] },
   references: { type: [reference], default: [] },
 });
+
+// Function to drop all indexes except _id
+// cvSchema.statics.dropIndexes = async function() {
+//   try {
+//     await this.collection.dropIndexes();
+//     console.log('Successfully dropped indexes from CV collection');
+//   } catch (error) {
+//     console.error('Error dropping indexes:', error);
+//   }
+// };
+
+cvSchema.index({ user: 1 });
 
 const Cv = mongoose.model("Cv", cvSchema);
 module.exports = Cv;

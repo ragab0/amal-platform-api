@@ -1,6 +1,9 @@
 const AppError = require("../../utils/appError");
 
 module.exports = function mainErrorController(err, req, res, next) {
+  console.error("FROM mainErrorController THERE IS AN ERROR:", err);
+  console.error("THE ERROR STACK:", err.stack);
+
   if (!err.isOperational) {
     if (err.name === "ValidationError") {
       err = handleMongodbValidationError(err);
@@ -29,6 +32,7 @@ module.exports = function mainErrorController(err, req, res, next) {
   return res.status(err.statusCode).json({
     [err.errs ? "results" : "result"]: err.errs || err.message,
     status: err.status,
+    payload: err.payload,
     forDevError: process.env.NODE_ENV === "development" ? err : undefined,
     forDevErrorStack:
       process.env.NODE_ENV === "development" ? err.stack : undefined,

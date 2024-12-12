@@ -3,6 +3,12 @@ const nodemailer = require("nodemailer");
 const { EMAIL_USERNAME: user, EMAIL_PASSWORD: pass } = process.env;
 
 class Email {
+  constructor(user) {
+    this.user = user;
+    this.email = user.email;
+    this.firstName = user.fname;
+  }
+
   async createTransporter() {
     // if (process.env.NODE_ENV === "development") {
     //   // Use Ethereal for testing in development
@@ -55,6 +61,48 @@ class Email {
     }
   }
 
+  async sendVerificationCode(verificationCode) {
+    const subject = 'Email Verification Code';
+    
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Welcome to Amal!</h2>
+        <p>Hello ${this.firstName},</p>
+        <p>Thank you for signing up. To complete your registration, please use the following verification code:</p>
+        <div style="background-color: #f4f4f4; padding: 15px; text-align: center; margin: 20px 0;">
+          <h1 style="color: #333; letter-spacing: 5px; margin: 0;">${verificationCode}</h1>
+        </div>
+        <p>This code will expire in 10 minutes.</p>
+        <p>If you didn't request this verification code, please ignore this email.</p>
+        <p>Best regards,<br>The Amal Team</p>
+      </div>
+    `;
+
+    const text = `
+      Welcome to Amal!
+      
+      Hello ${this.firstName},
+      
+      Thank you for signing up. To complete your registration, please use the following verification code:
+      
+      ${verificationCode}
+      
+      This code will expire in 10 minutes.
+      
+      If you didn't request this verification code, please ignore this email.
+      
+      Best regards,
+      The Amal Team
+    `;
+
+    await this.send({
+      email: this.email,
+      subject,
+      text,
+      html
+    });
+  }
+
   async sendPasswordReset(email, resetURL) {
     return this.send({
       email,
@@ -82,4 +130,4 @@ class Email {
   }
 }
 
-module.exports = new Email();
+module.exports = Email;

@@ -26,12 +26,9 @@ const userSchema = new mongoose.Schema(
       maxlength: [50, "First name cannot exceed 50 characters."],
       validate: {
         validator: function (value) {
-          return /^[\u0600-\u06FFa-zA-Z]+([\u0600-\u06FFa-zA-Z]+\s?)*[\u0600-\u06FFa-zA-Z]+$/.test(
-            value
-          );
+          return /^[\u0600-\u06FFa-zA-Z\s]+$/.test(value);
         },
-        message:
-          "First name must only contain letters, spaces, hyphens, or apostrophes.",
+        message: "First name ",
       },
     },
     lname: {
@@ -41,27 +38,29 @@ const userSchema = new mongoose.Schema(
       maxlength: [50, "Last name cannot exceed 50 characters."],
       validate: {
         validator: function (value) {
-          return /^[\u0600-\u06FFa-zA-Z]+([\u0600-\u06FFa-zA-Z]+\s?)*[\u0600-\u06FFa-zA-Z]+$/.test(
-            value
-          );
+          return /^[\u0600-\u06FFa-zA-Z\s]+$/.test(value);
         },
-        message:
-          "Last name must only contain letters, spaces, hyphens, or apostrophes.",
+        message: "Last name ",
       },
     },
     email: {
       type: String,
-      required: [true, "Email address is required."],
       unique: true,
+      required: [true, "Email address is required."],
       lowercase: true,
       maxlength: [255, "Email address cannot exceed 255 characters."],
       validate: {
         validator: function (value) {
-          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+          return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value);
         },
         message:
-          "Email address must be in the pattern of (/^[^s@]+@[^s@]+.[^s@]+$/).",
+          "Email address must be in the pattern of (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/).",
       },
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
     headline: {
       type: String,
@@ -70,9 +69,7 @@ const userSchema = new mongoose.Schema(
       maxlength: [128, "Headline cannot exceed 128 characters."],
       validate: {
         validator: function (value) {
-          return /^[\u0600-\u06FFa-zA-Z]+([\u0600-\u06FFa-zA-Z]+\s_|\-?)*[\u0600-\u06FFa-zA-Z]+$/.test(
-            value
-          );
+          return /^[\u0600-\u06FFa-zA-Z\s_\|\-]+$/.test(value);
         },
         message:
           "Headline must only contain letters, on space or the symbols (_|-) between each word",
@@ -107,8 +104,8 @@ const userSchema = new mongoose.Schema(
         validator: function (curr) {
           return curr === this.password;
         },
+        message: "Passwords do not match.",
       },
-      message: "Passwords do not match.",
     },
     role: {
       type: String,
@@ -117,6 +114,23 @@ const userSchema = new mongoose.Schema(
         values: ["user"],
         message: `Role must be one of ["user"]`,
       },
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationCode: {
+      type: String,
+      select: false,
+    },
+    verificationCodeExpiresAt: {
+      type: Date,
+      select: false,
+    },
+    countOfVerifiedCodes: {
+      type: Number,
+      default: 0,
+      select: false,
     },
     loginAttempts: {
       type: Number,
@@ -146,10 +160,11 @@ const userSchema = new mongoose.Schema(
     photo: String,
     phone: {
       type: String,
-      maxlength: [20, "Phone number cannot exceed 20 characters."],
+      minlength: [7, "رقم الهاتف يجب أن يكون على الأقل 7 ارقام"],
+      maxlength: [15, "رقم الهاتف يجب أن لا يتجاوز 15 رقم"],
       validate: {
         validator: function (value) {
-          return /^\+?\d{10,15}$/.test(value); // international and local formats
+          return /^\+?[0-9\s-]{7,15}$/.test(value); // international and local formats
         },
         message: "Phone number must be valid.",
       },
@@ -226,5 +241,53 @@ userSchema.methods.getBasicInfo = function () {
   };
 };
 
+/** for signup controller */
+
+// Generate a 6-digit code & Hash the code before saving:
+userSchema.methods.createVerificationCode = function () {
+  const verificationCode = Math.floor(
+    100000 + Math.random() * 900000
+  ).toString();
+  this.verificationCode = crypto
+    .createHash("sha256")
+    .update(verificationCode)
+    .digest("hex");
+  // Set expiration to 10 minutes & Return unhashed code for sending via email:
+  this.verificationCodeExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  this.countOfVerifiedCodes += 1;
+  return verificationCode;
+};
+
+// Verify the code
+userSchema.methods.verifyCode = function (code) {
+  console.log(
+    this.verificationCodeExpiresAt,
+    this.countOfVerifiedCodes,
+    code,
+    this
+  );
+
+  if (
+    !this.verificationCodeExpiresAt ||
+    this.verificationCodeExpiresAt < Date.now()
+  ) {
+    return false;
+  }
+
+  const hashedCode = crypto.createHash("sha256").update(code).digest("hex");
+  return this.verificationCode === hashedCode;
+};
+
+// Clear verification data
+userSchema.methods.clearVerificationCode = function () {
+  this.verificationCode = undefined;
+  this.verificationCodeExpiresAt = undefined;
+};
+
 const User = mongoose.model("User", userSchema);
+
+(async () => {
+  console.log(await User.countDocuments());
+})();
+
 module.exports = User;

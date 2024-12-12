@@ -9,7 +9,7 @@ function sendResults(res, results = [], page, totalPages, count = null) {
 }
 
 function sendResult(res, result, statusCode) {
-  res.status(statusCode || result ? 200 : 204).json({
+  res.status(statusCode || (result ? 200 : 204)).json({
     status: "success",
     result,
   });

@@ -42,47 +42,115 @@ function setCookie(res = rs, token) {
 
 // AUTH signup
 const signup = catchAsyncMiddle(async function (req = rq, res = rs, next) {
-  await new Promise((resolve) => signupLimiter(req, res, resolve));
+  // await new Promise((resolve) => signupLimiter(req, res, resolve));
 
-  // Clean email
-  if (req.body.email) {
-    req.body.email = req.body.email.toLowerCase().trim();
-  }
+  if (req.body.email) req.body.email = req.body.email.toLowerCase().trim();
 
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
+    const user = new User(req.body);
+    await user.save({ session });
 
-    const user = await User.create([req.body], { session });
-    const userInstance = user[0];
-
-    await CV.create(
-      [
-        {
-          user: userInstance._id,
-          personalInfo: {
-            fname: userInstance.fname,
-            lname: userInstance.lname,
-            headline: userInstance.headline,
-            photo: userInstance.photo,
-            phone: userInstance.phone,
-            email: userInstance.email,
-          },
-        },
-      ],
-      { session }
-    );
-
+    const cv = new CV({
+      user: user._id,
+      personalInfo: {
+        fname: user.fname,
+        lname: user.lname,
+        headline: user.headline,
+        photo: user.photo,
+        phone: user.phone,
+        email: user.email,
+      },
+    });
+    await cv.save({ session });
     await session.commitTransaction();
-    const token = signToken(userInstance);
-    setCookie(res, token);
-    sendResult(res, userInstance.getBasicInfo(), 201);
+    console.log("Commited transaction");
+    sendResult(res, "Done", 201);
   } catch (error) {
     await session.abortTransaction();
-    throw error; // Let the global error handler handle it
+    throw error;
   } finally {
     session.endSession();
   }
+});
+
+// Generate verification code
+const generateVerificationCode = catchAsyncMiddle(async function (
+  req = rq,
+  res = rs,
+  next
+) {
+  const { email } = req.body;
+
+  if (!email || typeof email !== "string") {
+    return next(new AppError("Please provide email address!", 400));
+  }
+
+  const user = await User.findOne({ email: email.toLocaleLowerCase().trim() });
+  if (!user) {
+    return next(new AppError("Invalid email address!", 404));
+  }
+
+  if (user.isVerified) {
+    return next(new AppError("Email is already verified!", 400));
+  }
+
+  const verificationCode = user.createVerificationCode();
+  await user.save({ validateBeforeSave: false });
+
+  try {
+    const emailInstance = new Email(user);
+    await emailInstance.sendVerificationCode(verificationCode);
+    sendResult(res, {
+      message: "Verification code sent successfully!",
+    });
+  } catch (error) {
+    user.clearVerificationCode();
+    await user.save({ validateBeforeSave: false });
+    return next(
+      new AppError(
+        "Failed to send verification code. Please try again later.",
+        500
+      )
+    );
+  }
+});
+
+// Verify email with code
+const verifyEmail = catchAsyncMiddle(async function (req = rq, res = rs, next) {
+  const { email, code } = req.body;
+
+  if (!email || !code || typeof email !== "string") {
+    return next(
+      new AppError("Please provide both email and verification code!", 400)
+    );
+  }
+
+  const user = await User.findOne({
+    email: email.toLocaleLowerCase().trim(),
+  }).select(
+    "+verificationCode +verificationCodeExpiresAt +countOfVerifiedCodes"
+  );
+
+  if (!user) {
+    return next(new AppError("Invalid email address!", 404));
+  }
+
+  if (!user.verifyCode(code)) {
+    return next(new AppError("Invalid or expired verification code!", 400));
+  }
+
+  // Clear verification data after successful verification
+  user.clearVerificationCode();
+  user.isVerified = true;
+  await user.save({ validateBeforeSave: false });
+
+  const token = signToken(user);
+  setCookie(res, token);
+  sendResult(res, {
+    message: "Email verified successfully!",
+  });
 });
 
 // AUTH login
@@ -90,16 +158,25 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   await new Promise((resolve) => loginLimiter(req, res, resolve)); // Apply rate limiter
   const { email, password } = req.body;
 
-  if (!email || !password) {
+  if (
+    !email ||
+    !password ||
+    typeof email !== "string" ||
+    String(password).trim() === ""
+  ) {
     return next(new AppError("Please provide email and password!", 400));
-  } else if (typeof email !== "string" || typeof password !== "string") {
+  } else if (
+    typeof email !== "string" ||
+    typeof password !== "string" ||
+    password.trim() === "" // in case there was not password in the db (signed up with provider)
+  ) {
     return next(new AppError("Invalid input type!", 400));
   }
 
   // Find user with all required fields
-  const user = await User.findOne({ email: email.toLowerCase().trim() }).select(
-    "+password +loginAttempts +lockUntil"
-  );
+  const user = await User.findOne({
+    email: email.toLocaleLowerCase().trim(),
+  }).select("+password +loginAttempts +lockUntil");
 
   // Check if account is locked
   if (user?.lockUntil > Date.now()) {
@@ -112,6 +189,7 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
     );
   }
 
+  // Check if credentials are valid
   if (!user || !(await user.comparePassword(password, user.password))) {
     if (user) {
       user.loginAttempts += 1;
@@ -128,14 +206,35 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
       }
       await user.save({ validateBeforeSave: false });
     }
-    return next(new AppError("Invalid email or password", 401));
+    return next(new AppError("Invalid email or password", 400));
   }
-  // Reset security fields on successful login
-  user.loginAttempts = 0;
-  user.lockUntil = null;
-  user.lastLoginAt = new Date();
-  await user.save({ validateBeforeSave: false });
 
+  // Reset login attempts on successful login
+  if (user.loginAttempts > 0) {
+    user.loginAttempts = 0;
+    user.lockUntil = null;
+    user.lastLoginAt = new Date();
+    await user.save({ validateBeforeSave: false });
+  }
+
+  // Check if email is verified
+  // Using 303 See Other to indicate the user should be redirected to a different resource
+  if (!user.isVerified) {
+    return sendResult(
+      res,
+      {
+        message: "Email verification required",
+        payload: {
+          isVerified: false,
+          email: user.email,
+          redirectTo: "/verify-email",
+        },
+      },
+      303
+    );
+  }
+
+  // If everything ok, send token
   const token = signToken(user);
   setCookie(res, token);
   sendResult(res, user.getBasicInfo());
@@ -145,9 +244,12 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
 });
 
 const isLogin = catchAsyncMiddle(async function (req = rq, res = rs) {
-  // protect middleware already validated everything
-  // and attached user to req.user
-  sendResult(res, req.user.getBasicInfo());
+  // protect middleware already validated;
+  if (req.user.isVerified) {
+    sendResult(res, req.user.getBasicInfo());
+  } else {
+    sendResult(res, { isVerified: false }, 401);
+  }
 });
 
 // AUTH protection
@@ -200,15 +302,7 @@ const logout = catchAsyncMiddle(async function (req = rq, res = rs) {
   // If user is logged in, update their instance
   if (req.user) {
     req.user.lastLogoutAt = new Date();
-    req.user.sessionCount = (req.user.sessionCount || 1) - 1;
-    await req.user.save();
-
-    // Log the logout for security tracking
-    console.log(
-      `User ${
-        req.user._id
-      } logged out successfully at ${new Date().toISOString()}`
-    );
+    await req.user.save({ validateBeforeSave: false });
   }
 
   // Clear any other session-related cookies if exist
@@ -230,7 +324,7 @@ const forgotPassword = catchAsyncMiddle(async function (
   await new Promise((resolve) => forgotPasswordLimiter(req, res, resolve));
 
   // Clean email
-  const email = req.body.email?.toLowerCase().trim();
+  const email = req.body.email?.toLocaleLowerCase().trim();
   if (!email) {
     return next(new AppError("Please provide your email address", 400));
   }
@@ -339,13 +433,24 @@ const resetPassword = catchAsyncMiddle(async function (
   }
 });
 
+// Provider Auth callback
+const providerCallback = catchAsyncMiddle(async (req = rq, res = rs, next) => {
+  const token = signToken(req.user);
+  setCookie(res, token);
+  // Redirect to frontend home page with success query param
+  res.redirect(`${process.env.FRONTEND_URL}/auth/callback?auth=success`);
+});
+
 module.exports = {
   signup,
   login,
-  protect,
   logout,
+  protect,
   isLogin,
-  assignableTo,
+  verifyEmail,
+  generateVerificationCode,
   forgotPassword,
+  providerCallback,
+  assignableTo,
   resetPassword,
 };

@@ -1,10 +1,13 @@
 const AppError = require("./utils/appError");
 const express = require("express");
+// const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const compression = require("compression");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./configs/documentation");
+const passport = require("./configs/passport");
+const sessionConfig = require("./configs/session");
 const mainErrorController = require("./controllers/handlers/errorHandlers");
 const logger = require("./controllers/handlers/logger");
 const authRoutes = require("./routes/authRoutes");
@@ -28,11 +31,14 @@ app.use(
 app.use(logger);
 app.use(express.json());
 app.use(cookieParser());
+app.use(sessionConfig);
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(compression());
 
 // mounting the app routes;
 app.use("/api/v1/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use("/api/v1/", authRoutes);
+app.use("/api/v1/auth/", authRoutes);
 app.use("/api/v1/cvs", cvsRoutes);
 app.use("/api/v1/reviews", reviewsRoutes);
 app.use("/api/v1/templates", templatesRoutes);
