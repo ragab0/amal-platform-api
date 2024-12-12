@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const {
-  DB_ENV = "REMOTE",
+  IS_DB_LOCAL,
   DATABASE_LOCAL,
   DATABASE_REMOTE,
   DATABASE_REMOTE_PASSWORD,
@@ -10,7 +10,7 @@ const {
 // configuring the db in both (local && remote) && validate connection or stop the server;
 const connectDatabase = async () => {
   let db, options;
-  if (DB_ENV === "local") {
+  if (IS_DB_LOCAL === "true") {
     db = DATABASE_LOCAL;
     options = {};
   } else {
@@ -24,7 +24,9 @@ const connectDatabase = async () => {
     await mongoose.connect(db, options);
     await mongoose.connection.db.admin().command({ ping: 1 });
     console.log(
-      `Pinged your ${DB_ENV} database. You successfully connected to MongoDB!`
+      `Pinged your ${
+        IS_DB_LOCAL === "true" ? "local" : "remote"
+      } database. You successfully connected to MongoDB!`
     );
   } catch (error) {
     console.error("DB connection is failed:", error);
