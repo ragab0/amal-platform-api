@@ -1,6 +1,7 @@
 const authControllers = require("../controllers/authControllers");
 const passport = require("passport");
 const authRouter = require("express").Router();
+const { FRONTEND_URL } = process.env;
 
 /* public routes */
 authRouter.post("/signup", authControllers.signup);
@@ -25,7 +26,7 @@ authRouter.get(
 authRouter.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: `${process.env.FRONTEND_URL}/auth/callback?auth=error&provider=google`,
+    failureRedirect: `${FRONTEND_URL}/auth/callback?auth=error&provider=google`,
   }),
   authControllers.providerCallback
 );
@@ -40,7 +41,7 @@ authRouter.get(
 authRouter.get(
   "/linkedin/callback",
   passport.authenticate("linkedin", {
-    failureRedirect: `${process.env.FRONTEND_URL}/auth/callback?auth=error&provider=linkedin`,
+    failureRedirect: `${FRONTEND_URL}/auth/callback?auth=error&provider=linkedin`,
   }),
   authControllers.providerCallback
 );

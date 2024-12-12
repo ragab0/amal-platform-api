@@ -9,14 +9,8 @@ const { sign, verify } = require("jsonwebtoken");
 const { sendResult } = require("./handlers/send");
 const { default: mongoose } = require("mongoose");
 const { COOKIE_CONFIG } = require("../configs/headerCookies");
-const {
-  signupLimiter,
-  loginLimiter,
-  forgotPasswordLimiter,
-  resetPasswordLimiter,
-} = require("../utils/limiters");
 
-const { JWT_SECRET, JWT_EXPIRES_IN } = process.env;
+const { JWT_SECRET, JWT_EXPIRES_IN, FRONTEND_URL } = process.env;
 const COOKIE_NAME = "jwt";
 
 function signToken(user = {}) {
@@ -42,8 +36,6 @@ function setCookie(res = rs, token) {
 
 // AUTH signup
 const signup = catchAsyncMiddle(async function (req = rq, res = rs, next) {
-  // await new Promise((resolve) => signupLimiter(req, res, resolve));
-
   if (req.body.email) req.body.email = req.body.email.toLowerCase().trim();
 
   const session = await mongoose.startSession();
@@ -155,22 +147,22 @@ const verifyEmail = catchAsyncMiddle(async function (req = rq, res = rs, next) {
 
 // AUTH login
 const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
-  await new Promise((resolve) => loginLimiter(req, res, resolve)); // Apply rate limiter
   const { email, password } = req.body;
 
   if (
     !email ||
     !password ||
     typeof email !== "string" ||
-    String(password).trim() === ""
-  ) {
-    return next(new AppError("Please provide email and password!", 400));
-  } else if (
-    typeof email !== "string" ||
     typeof password !== "string" ||
-    password.trim() === "" // in case there was not password in the db (signed up with provider)
+    email.trim() === "" ||
+    password.trim() === ""
   ) {
-    return next(new AppError("Invalid input type!", 400));
+    return next(
+      new AppError("Please provide a valid email and password", 400, {
+        email,
+        password,
+      })
+    );
   }
 
   // Find user with all required fields
@@ -324,9 +316,6 @@ const forgotPassword = catchAsyncMiddle(async function (
   res = rs,
   next
 ) {
-  // Apply rate limiter
-  await new Promise((resolve) => forgotPasswordLimiter(req, res, resolve));
-
   // Clean email
   const email = req.body.email?.toLocaleLowerCase().trim();
   if (!email) {
@@ -387,9 +376,6 @@ const resetPassword = catchAsyncMiddle(async function (
   res = rs,
   next
 ) {
-  // Apply rate limiter
-  await new Promise((resolve) => resetPasswordLimiter(req, res, resolve));
-
   try {
     // Hash token for comparison
     const hashedToken = crypto
@@ -442,7 +428,7 @@ const providerCallback = catchAsyncMiddle(async (req = rq, res = rs, next) => {
   const token = signToken(req.user);
   setCookie(res, token);
   // Redirect to frontend home page with success query param
-  res.redirect(`${process.env.FRONTEND_URL}/auth/callback?auth=success`);
+  res.redirect(`${FRONTEND_URL}/auth/callback?auth=success`);
 });
 
 module.exports = {

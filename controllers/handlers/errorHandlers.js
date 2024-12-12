@@ -1,4 +1,5 @@
 const AppError = require("../../utils/appError");
+const { NODE_ENV } = process.env;
 
 module.exports = function mainErrorController(err, req, res, next) {
   console.error("FROM mainErrorController THERE IS AN ERROR:", err);
@@ -21,7 +22,7 @@ module.exports = function mainErrorController(err, req, res, next) {
     } else if (false) {
     } else if (false) {
     } else {
-      if (process.env.NODE_ENV === "development") {
+      if (NODE_ENV === "development") {
         err = globalHandlerDev(err);
       } else {
         err = globalHandlerPro();
@@ -33,9 +34,8 @@ module.exports = function mainErrorController(err, req, res, next) {
     [err.errs ? "results" : "result"]: err.errs || err.message,
     status: err.status,
     payload: err.payload,
-    forDevError: process.env.NODE_ENV === "development" ? err : undefined,
-    forDevErrorStack:
-      process.env.NODE_ENV === "development" ? err.stack : undefined,
+    forDevError: NODE_ENV === "development" ? err : undefined,
+    forDevErrorStack: NODE_ENV === "development" ? err.stack : undefined,
   });
 };
 

@@ -2,10 +2,10 @@
 // the warning ON PRODUCTION is acceptable as sessions are short-lived and only for OAuth
 
 const session = require("express-session");
-const { NODE_ENV } = process.env;
+const { NODE_ENV, JWT_SECRET } = process.env;
 
 const sessionConfig = session({
-  secret: process.env.JWT_SECRET || "ths-is-our-secret-key-for-session",
+  secret: JWT_SECRET || "ths-is-our-secret-key-for-session",
   resave: false,
   saveUninitialized: false,
   name: "amal-oauth-session",

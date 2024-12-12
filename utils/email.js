@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-const { EMAIL_USERNAME: user, EMAIL_PASSWORD: pass } = process.env;
+const { EMAIL_USERNAME: user, EMAIL_PASSWORD: pass, NODE_ENV } = process.env;
 
 class Email {
   constructor(user) {
@@ -10,7 +10,7 @@ class Email {
   }
 
   async createTransporter() {
-    // if (process.env.NODE_ENV === "development") {
+    // if (NODE_ENV === "development") {
     //   // Use Ethereal for testing in development
     //   const testAccount = await nodemailer.createTestAccount();
     //   return nodemailer.createTransport({
@@ -48,7 +48,7 @@ class Email {
 
       const info = await transporter.sendMail(mailOptions);
 
-      if (process.env.NODE_ENV === "development") {
+      if (NODE_ENV === "development") {
         console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
         return {
           previewUrl: nodemailer.getTestMessageUrl(info),
@@ -62,8 +62,8 @@ class Email {
   }
 
   async sendVerificationCode(verificationCode) {
-    const subject = 'Email Verification Code';
-    
+    const subject = "Email Verification Code";
+
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Welcome to Amal!</h2>
@@ -99,7 +99,7 @@ class Email {
       email: this.email,
       subject,
       text,
-      html
+      html,
     });
   }
 
