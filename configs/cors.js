@@ -8,6 +8,7 @@ const corsOptions = {
     }
 
     if (FRONTEND_URL === origin) {
+      console.log("FRONTEND URL === ORIGIN ===", origin);
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
