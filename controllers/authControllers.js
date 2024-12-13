@@ -252,7 +252,6 @@ const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   } else if (req.cookies[COOKIE_NAME]) {
     token = req.cookies[COOKIE_NAME];
   } else {
-    return sendResult(res);
     return next(new AppError("Login to get access!", 401));
   }
 
