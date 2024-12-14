@@ -2,15 +2,17 @@ const mongoose = require("mongoose");
 const User = require("../userModel");
 
 const personalInfoSchema = new mongoose.Schema({
-  fname: User.schema.obj.fname,
-  lname: User.schema.obj.lname,
-  photo: User.schema.obj.photo,
+  fullName: {
+    type: String,
+    required: [true, "Full name is required."],
+  },
   email: {
     ...User.schema.obj.email,
-    unique: false  // Override the unique constraint from User schema
+    unique: false,
   },
-  phone: User.schema.obj.phone,
-  headline: User.schema.obj.headline,
+  phone: User.schema.obj.phone, // With validation BUT optional
+  photo: String,
+  headline: String,
   city: String,
   country: String,
   birthDate: Date,

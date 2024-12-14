@@ -166,7 +166,7 @@ const userSchema = new mongoose.Schema(
         validator: function (value) {
           return /^\+?[0-9\s-]{7,15}$/.test(value); // international and local formats
         },
-        message: "Phone number must be valid.",
+        message: "رقم الهاتف غير صالح.",
       },
     },
     language: {

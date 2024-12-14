@@ -33,22 +33,26 @@ exports.getCV = catchAsyncMiddle(async (req, res, next) => {
 exports.updateCV = catchAsyncMiddle(async (req, res, next) => {
   let cv;
   if (req.user.role === "admin") {
-    cv = await CV.findById(req.params.cvId).select("+isActive");
+    cv = await CV.findByIdAndUpdate(req.params.cvId, req.body, {
+      runValidators: true,
+      new: true,
+    });
   } else {
-    cv = await CV.findOne({ user: req.user._id });
-    // Prevent changing isActive through update BY THE USER
+    console.log(req.body);
+
     if (req.body.isActive !== undefined) {
-      delete req.body.isActive;
+      delete req.body.isActive; // Prevent changing isActive through update BY THE USER
     }
+    cv = await CV.findOneAndUpdate({ user: req.user._id }, req.body, {
+      runValidators: true,
+      new: true,
+    });
   }
 
   if (!cv) {
     return next(new AppError("CV not found", 404));
   }
 
-  // Update the CV
-  Object.assign(cv, req.body);
-  await cv.save({ runValidators: true });
   sendResult(res, cv);
 });
 

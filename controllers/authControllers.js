@@ -47,8 +47,7 @@ const signup = catchAsyncMiddle(async function (req = rq, res = rs, next) {
     const cv = new CV({
       user: user._id,
       personalInfo: {
-        fname: user.fname,
-        lname: user.lname,
+        fullName: user.fname + " " + user.lname,
         headline: user.headline,
         photo: user.photo,
         phone: user.phone,
@@ -260,11 +259,11 @@ const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   // is the user not CUSTOMLY changed,deleted (by admin or db designer)
   const currentUser = await User.findById(id);
   if (!currentUser) {
-    return next(new AppError("User doesn't longer exist!", 401));
+    return next(new AppError("User doesn't longer exist!", 400));
   }
   // is the user password has not been changed after the token iat;
   if (currentUser.isPasswordChangedAfter(iat)) {
-    return next(new AppError("Password has been changed, login again.", 401));
+    return next(new AppError("Password has been changed, login again.", 400));
   }
   // pass the current user to the next middles that was requires protection;
   req.user = currentUser;
@@ -296,12 +295,6 @@ const logout = catchAsyncMiddle(async function (req = rq, res = rs) {
     req.user.lastLogoutAt = new Date();
     await req.user.save({ validateBeforeSave: false });
   }
-
-  // Clear any other session-related cookies if exist
-  const cookies = Object.keys(req.cookies);
-  cookies.forEach((cookie) => {
-    res.clearCookie(cookie, COOKIE_CONFIG);
-  });
 
   // Send success response
   sendResult(res, null, 200);

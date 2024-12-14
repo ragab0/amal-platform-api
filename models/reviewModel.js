@@ -22,10 +22,10 @@ const reviewSchema = new mongoose.Schema(
 reviewSchema.index({ user: 1 });
 
 // Pre-find hook to automatically populate user data
-reviewSchema.pre(/^find/, function(next) {
+reviewSchema.pre(/^find/, function (next) {
   this.populate({
-    path: 'user',
-    select: 'fname lname photo'
+    path: "user",
+    select: "fname lname photo",
   });
   next();
 });
