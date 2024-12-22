@@ -3,9 +3,13 @@ const mongoose = require("mongoose");
 
 const skill = mongoose.Schema({
   name: { type: String, required: [true, "Skill name is required."] },
-  level: {
+  levelPercentage: {
     type: Number,
     default: 100,
+  },
+  levelText: {
+    type: String,
+    default: "",
   },
 });
 

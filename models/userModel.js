@@ -158,6 +158,7 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
     photo: String,
+    country: String,
     phone: {
       type: String,
       minlength: [7, "رقم الهاتف يجب أن يكون على الأقل 7 ارقام"],
@@ -282,6 +283,13 @@ userSchema.methods.verifyCode = function (code) {
 userSchema.methods.clearVerificationCode = function () {
   this.verificationCode = undefined;
   this.verificationCodeExpiresAt = undefined;
+};
+
+// Set new password directly without validation
+userSchema.methods.setNewPassword = async function (newPassword) {
+  this.password = newPassword;
+  this.passwordConfirm = newPassword;
+  this.passwordChangedAt = Date.now();
 };
 
 const User = mongoose.model("User", userSchema);

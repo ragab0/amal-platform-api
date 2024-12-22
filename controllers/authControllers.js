@@ -1,9 +1,9 @@
+const catchAsyncMiddle = require("../utils/catchAsyncMiddle");
+const crypto = require("crypto");
 const CV = require("../models/cvModel");
 const User = require("../models/userModel");
 const AppError = require("../utils/appError");
 const Email = require("../utils/email");
-const catchAsyncMiddle = require("../utils/catchAsyncMiddle");
-const crypto = require("crypto");
 const { response: rs, request: rq } = require("express");
 const { sign, verify } = require("jsonwebtoken");
 const { sendResult } = require("./handlers/send");

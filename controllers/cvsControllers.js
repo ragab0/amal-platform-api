@@ -3,7 +3,7 @@ const AppError = require("../utils/appError");
 const catchAsyncMiddle = require("../utils/catchAsyncMiddle");
 const { sendResult, sendResults } = require("./handlers/send");
 
-// Only admin can get all CVs
+// Route-Level authorization;
 exports.getAllCVs = catchAsyncMiddle(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -15,7 +15,7 @@ exports.getAllCVs = catchAsyncMiddle(async (req, res, next) => {
   sendResults(res, cvs, page, totalPages, totalCount);
 });
 
-// Users can only get their own CV (based on coming ID), admins can get any CV
+// Controller-Level authorization - admin anyone, user only himself;
 exports.getCV = catchAsyncMiddle(async (req, res, next) => {
   let cv;
   if (req.user.role === "admin") {
@@ -29,7 +29,7 @@ exports.getCV = catchAsyncMiddle(async (req, res, next) => {
   sendResult(res, cv);
 });
 
-// Users can only update their own CV, admins can update any CV
+// Controller-Level authorization - admin anyone, user only himself;
 exports.updateCV = catchAsyncMiddle(async (req, res, next) => {
   let cv;
   if (req.user.role === "admin") {
@@ -56,7 +56,7 @@ exports.updateCV = catchAsyncMiddle(async (req, res, next) => {
   sendResult(res, cv);
 });
 
-// Soft delete - only admin can de/activate CVs
+// Route-Level authroization && Soft delete;
 exports.unActiveCV = catchAsyncMiddle(async (req, res, next) => {
   const cv = await CV.findById(req.params.cvId).select("+isActive");
   if (!cv) {

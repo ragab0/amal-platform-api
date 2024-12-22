@@ -11,11 +11,13 @@ const sessionConfig = require("./configs/session");
 const mainErrorController = require("./controllers/handlers/errorHandlers");
 const logger = require("./controllers/handlers/logger");
 const authRoutes = require("./routes/authRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const cvsRoutes = require("./routes/cvsRoutes");
 const reviewsRoutes = require("./routes/reviewsRoutes");
 const templatesRoutes = require("./routes/templatesRoutes");
 const usersRoutes = require("./routes/usersRoutes");
 const { corsOptions } = require("./configs/cors");
+const jobsRoutes = require("./routes/jobsRoutes");
 
 const app = express();
 app.use(cors(corsOptions));
@@ -31,9 +33,11 @@ app.use(compression());
 app.use("/api/v1/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/api/v1/auth/", authRoutes);
 app.use("/api/v1/cvs", cvsRoutes);
-app.use("/api/v1/reviews", reviewsRoutes);
 app.use("/api/v1/templates", templatesRoutes);
+app.use("/api/v1/admin/", adminRoutes);
 app.use("/api/v1/users", usersRoutes);
+app.use("/api/v1/jobs", jobsRoutes);
+app.use("/api/v1/reviews", reviewsRoutes);
 
 // our main route handler in case a route not matched/handled;
 app.all("*", function (req, res, next) {

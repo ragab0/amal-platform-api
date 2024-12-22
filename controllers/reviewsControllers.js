@@ -3,7 +3,7 @@ const AppError = require("../utils/appError");
 const catchAsyncMiddle = require("../utils/catchAsyncMiddle");
 const { sendResult, sendResults } = require("./handlers/send");
 
-// Anyone can get all reviews
+// Public
 exports.getAllReviews = catchAsyncMiddle(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -15,12 +15,14 @@ exports.getAllReviews = catchAsyncMiddle(async (req, res) => {
   sendResults(res, reviews, page, totalPages, totalCount);
 });
 
+// Controller-Level authorization - admin anyone, user only himself;
 // Users can create their own reviews
 exports.createReview = catchAsyncMiddle(async (req, res) => {
   const newReview = await Review.create({ ...req.body, user: req.user._id });
   sendResult(res, newReview, 201);
 });
 
+// Controller-Level authorization - admin anyone, user only himself;
 // Users can get their own review, admins can get any review;
 exports.getReview = catchAsyncMiddle(async (req, res) => {
   let review;
@@ -31,14 +33,13 @@ exports.getReview = catchAsyncMiddle(async (req, res) => {
       user: req.user._id,
     });
   }
-
   if (!review) {
     return next(new AppError("Review not found", 404));
   }
   sendResult(res, review);
 });
 
-// Update review - only owner or admin
+// Controller-Level authorization - admin anyone, user only himself;
 exports.updateReview = catchAsyncMiddle(async (req, res, next) => {
   let review;
   if (req.user.role === "admin") {
@@ -48,23 +49,20 @@ exports.updateReview = catchAsyncMiddle(async (req, res, next) => {
       user: req.user._id,
     });
   }
-
   if (!review) {
     return next(new AppError("Review not found", 404));
   }
-
   // Prevent changing the user
   if (req.body.user) {
     delete req.body.user;
   }
-
   // Update the review
   Object.assign(review, req.body);
   await review.save({ runValidators: true });
   sendResult(res, review);
 });
 
-// Delete review - only owner or admin
+// Controller-Level authorization - admin anyone, user only himself;
 exports.deleteReview = catchAsyncMiddle(async (req, res) => {
   let review;
   if (req.user.role === "admin") {
