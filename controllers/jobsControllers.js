@@ -3,6 +3,25 @@ const AppError = require("../utils/appError");
 const catchAsyncMiddle = require("../utils/catchAsyncMiddle");
 const { sendResult, sendResults } = require("./handlers/send");
 
+// Utility function to get all jobs for admin with pagination
+const getAllJobsForAdmin = async (req) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const totalCount = await Job.countDocuments();
+  const totalPages = Math.ceil(totalCount / limit);
+
+  const jobs = await Job.find()
+    .populate("createdBy", "fname lname email")
+    .select("+isActive +createdBy")
+    .skip(skip)
+    .limit(limit)
+    .sort("-createdAt");
+
+  return { jobs, page, totalPages, totalCount };
+};
+
 // Public
 exports.getAllJobs = catchAsyncMiddle(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -33,35 +52,35 @@ exports.getAllJobs = catchAsyncMiddle(async (req, res) => {
 
 // Route-Level authorization - admin only
 exports.getAllJobsAdmin = catchAsyncMiddle(async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const skip = (page - 1) * limit;
-
-  const totalCount = await Job.countDocuments();
-  const totalPages = Math.ceil(totalCount / limit);
-
-  const jobs = await Job.find()
-    .populate("createdBy", "fname lname email")
-    .select("+isActive +createdBy")
-    .skip(skip)
-    .limit(limit)
-    .sort("-createdAt");
-
+  const { jobs, page, totalPages, totalCount } = await getAllJobsForAdmin(req);
   sendResults(res, jobs, page, totalPages, totalCount);
 });
 
-// Controller-Level authorization - admin anyone, user only himself
+// Public
 exports.getJob = catchAsyncMiddle(async (req, res, next) => {
   let query = { _id: req.params.jobId };
 
-  // If not admin, only show active jobs
-  if (req.user?.role !== "admin") {
+  // only can get active jobs
+  if (!req.user || req.user.role !== "admin") {
     query.isActive = true;
   }
 
+  const job = await Job.findOne(query).select("+isActive");
+
+  if (!job) {
+    return next(new AppError("الوظيفة غير موجودة", 404));
+  }
+
+  sendResult(res, job);
+});
+
+// Route-Level authorization - admin only
+exports.getJobAdmin = catchAsyncMiddle(async (req, res, next) => {
+  let query = { _id: req.params.jobId };
+
   const job = await Job.findOne(query)
     .populate("createdBy", "fname lname company")
-    .select(req.user?.role === "admin" ? "+isActive" : "");
+    .select("+isActive +createdBy");
 
   if (!job) {
     return next(new AppError("الوظيفة غير موجودة", 404));
@@ -72,31 +91,22 @@ exports.getJob = catchAsyncMiddle(async (req, res, next) => {
 
 // Route-Level authorization - admin only
 exports.createJob = catchAsyncMiddle(async (req, res) => {
-  const newJob = await Job.create({
+  await Job.create({
     ...req.body,
     createdBy: req.user._id,
   });
 
-  sendResult(res, newJob);
+  // Return all jobs after creation
+  const { jobs, page, totalPages, totalCount } = await getAllJobsForAdmin(req);
+  sendResults(res, jobs, page, totalPages, totalCount);
 });
 
-// Controller-Level authorization - admin anyone, user only himself
+// Route-Level - Admin Only
 exports.updateJob = catchAsyncMiddle(async (req, res, next) => {
-  let job;
-  if (req.user.role === "admin") {
-    job = await Job.findById(req.params.jobId).select("+isActive");
-  } else {
-    job = await Job.findOne({
-      _id: req.params.jobId,
-      createdBy: req.user._id,
-      isActive: true,
-    });
-  }
+  const job = await Job.findById(req.params.jobId).select("+isActive");
 
   if (!job) {
-    return next(
-      new AppError("الوظيفة غير موجودة أو غير مصرح لك بتعديلها", 404)
-    );
+    return next(new AppError("الوظيفة غير موجودة", 404));
   }
 
   // Prevent changing the creator
@@ -107,28 +117,23 @@ exports.updateJob = catchAsyncMiddle(async (req, res, next) => {
   Object.assign(job, req.body);
   await job.save({ runValidators: true });
 
-  sendResult(res, job);
+  // Return all jobs after update
+  const { jobs, page, totalPages, totalCount } = await getAllJobsForAdmin(req);
+  sendResults(res, jobs, page, totalPages, totalCount);
 });
 
-// Controller-Level authorization - admin anyone, user only himself
+// Route-Level - Admin Only
 exports.deleteJob = catchAsyncMiddle(async (req, res, next) => {
-  let job;
-  if (req.user.role === "admin") {
-    job = await Job.findById(req.params.jobId).select("+isActive");
-  } else {
-    job = await Job.findOne({
-      _id: req.params.jobId,
-      createdBy: req.user._id,
-      isActive: true,
-    });
-  }
+  const job = await Job.findById(req.params.jobId).select("+isActive");
 
   if (!job) {
-    return next(new AppError("الوظيفة غير موجودة أو غير مصرح لك بحذفها", 404));
+    return next(new AppError("الوظيفة غير موجودة", 404));
   }
 
   job.isActive = false;
   await job.save({ validateBeforeSave: false });
 
-  sendResult(res, null);
+  // Return all jobs after deletion
+  const { jobs, page, totalPages, totalCount } = await getAllJobsForAdmin(req);
+  sendResults(res, jobs, page, totalPages, totalCount);
 });

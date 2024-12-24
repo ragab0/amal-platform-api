@@ -3,10 +3,10 @@ const jobsRouter = require("express").Router();
 const authControllers = require("../controllers/authControllers");
 
 /* Public routes */
-jobsRouter.get("/", jobsControllers.getAllJobs);
-jobsRouter.get("/:jobId", jobsControllers.getJob);
+jobsRouter.get("/public", jobsControllers.getAllJobs);
+jobsRouter.get("/public/:jobId", jobsControllers.getJob);
 
-/* Protected routes && Admin routes (Router-Level) */
+/* Protected routes Admin routes (Router-Level) */
 jobsRouter.use(authControllers.protect, authControllers.assignableTo("admin"));
 
 jobsRouter
@@ -15,6 +15,7 @@ jobsRouter
   .post(jobsControllers.createJob);
 jobsRouter
   .route("/:jobId")
+  .get(jobsControllers.getJobAdmin)
   .put(jobsControllers.updateJob)
   .delete(jobsControllers.deleteJob);
 
