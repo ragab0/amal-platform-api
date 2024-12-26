@@ -12,8 +12,8 @@ reviewsRouter
   .route("/")
   .get(
     // Route-Level
-    authControllers.assignableTo("admin"),
-    reviewsControllers.getAllReviewsAdmin
+    authControllers.assignableTo("admin")
+    // reviewsControllers.getAllReviewsAdmin
   )
   .post(reviewsControllers.createReview);
 reviewsRouter
