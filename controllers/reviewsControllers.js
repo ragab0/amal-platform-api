@@ -3,79 +3,125 @@ const AppError = require("../utils/appError");
 const catchAsyncMiddle = require("../utils/catchAsyncMiddle");
 const { sendResult, sendResults } = require("./handlers/send");
 
-// Public
-exports.getAllReviews = catchAsyncMiddle(async (req, res) => {
+// Utility function to get all reviews with pagination
+const getAllReviewsWithPagination = async (req, query = {}) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
 
-  const totalCount = await Review.countDocuments();
+  const totalCount = await Review.countDocuments(query);
   const totalPages = Math.ceil(totalCount / limit);
-  const reviews = await Review.find().skip(skip).limit(limit);
+
+  const reviews = await Review.find(
+    req.user?.role === "admin" ? undefined : query
+  )
+    .select(req.user?.role === "admin" ? "+isActive +public" : undefined)
+    .skip(skip)
+    .limit(limit)
+    .sort("-createdAt");
+
+  return { reviews, page, totalPages, totalCount };
+};
+
+// controller-Level authorization - admin all, public only (active && public)
+exports.getAllReviews = catchAsyncMiddle(async (req, res) => {
+  const query =
+    req.user?.role === "admin" ? {} : { isActive: true, public: true };
+  const { reviews, page, totalPages, totalCount } =
+    await getAllReviewsWithPagination(req, query);
   sendResults(res, reviews, page, totalPages, totalCount);
 });
 
-// Controller-Level authorization - admin anyone, user only himself;
-// Users can create their own reviews
-exports.createReview = catchAsyncMiddle(async (req, res) => {
-  const newReview = await Review.create({ ...req.body, user: req.user._id });
-  sendResult(res, newReview, 201);
-});
-
-// Controller-Level authorization - admin anyone, user only himself;
-// Users can get their own review, admins can get any review;
-exports.getReview = catchAsyncMiddle(async (req, res) => {
+// Controller-Level authorization - admin any, user owner;
+exports.getReview = catchAsyncMiddle(async (req, res, next) => {
+  let query;
   let review;
   if (req.user.role === "admin") {
-    review = await Review.findById(req.params.reviewId);
+    query = { _id: req.params.reviewId };
+    review = await Review.findOne(query).select("+isActive +public");
   } else {
-    review = await Review.findOne({
-      user: req.user._id,
-    });
+    query = { user: req.user._id };
+    review = await Review.findOne(query);
   }
+
   if (!review) {
-    return next(new AppError("Review not found", 404));
+    return next(new AppError("التقييم غير موجود", 404));
   }
+
   sendResult(res, review);
 });
 
-// Controller-Level authorization - admin anyone, user only himself;
+// Controller-Level authorization - Create review (authenticated users)
+exports.createReview = catchAsyncMiddle(async (req, res, next) => {
+  // Check if user already has a review
+  const existingReview = await Review.findOne({ user: req.user._id });
+  if (existingReview) {
+    return next(new AppError("لديك تقييم موجود بالفعل", 400));
+  }
+
+  const review = await Review.create({
+    ...req.body,
+    user: req.user._id,
+  });
+
+  sendResult(res, review);
+});
+
+// Controller-Level authorization - Update review (admin or owner)
 exports.updateReview = catchAsyncMiddle(async (req, res, next) => {
-  let review;
-  if (req.user.role === "admin") {
-    review = await Review.findById(req.params.reviewId);
-  } else {
-    review = await Review.findOne({
-      user: req.user._id,
-    });
+  const query = { _id: req.params.reviewId };
+
+  // If not admin, user can only update their own review
+  if (req.user.role !== "admin") {
+    query.user = req.user._id;
   }
+
+  const review = await Review.findOne(query).select("+isActive +public");
+
   if (!review) {
-    return next(new AppError("Review not found", 404));
+    return next(new AppError("التقييم غير موجود أو غير مصرح لك بتعديله", 404));
   }
+
   // Prevent changing the user
   if (req.body.user) {
     delete req.body.user;
   }
-  // Update the review
+
+  // Only admin can change isActive and public status
+  if (req.user.role !== "admin") {
+    delete req.body.isActive;
+    delete req.body.public;
+  }
+
   Object.assign(review, req.body);
   await review.save({ runValidators: true });
+
   sendResult(res, review);
 });
 
-// Controller-Level authorization - admin anyone, user only himself;
-exports.deleteReview = catchAsyncMiddle(async (req, res) => {
-  let review;
-  if (req.user.role === "admin") {
-    review = await Review.findById(req.params.reviewId);
-  } else {
-    review = await Review.findOne({
-      user: req.user._id,
-    });
+// Controller-Level authorization - Delete review (admin or owner)
+exports.deleteReview = catchAsyncMiddle(async (req, res, next) => {
+  const query = { _id: req.params.reviewId };
+
+  // If not admin, user can only delete their own review
+  if (req.user.role !== "admin") {
+    query.user = req.user._id;
   }
 
+  const review = await Review.findOne(query).select("+isActive");
+
   if (!review) {
-    return next(new AppError("Review not found", 404));
+    return next(new AppError("التقييم غير موجود أو غير مصرح لك بحذفه", 404));
   }
-  await review.deleteOne();
-  sendResult(res, null, 204);
+
+  if (req.user.role === "admin") {
+    // Admin can permanently delete
+    await Review.deleteOne({ _id: req.params.reviewId });
+  } else {
+    // Users can only soft delete
+    review.isActive = false;
+    await review.save({ validateBeforeSave: false });
+  }
+
+  sendResult(res, null);
 });

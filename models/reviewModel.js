@@ -3,32 +3,55 @@ const mongoose = require("mongoose");
 const reviewSchema = new mongoose.Schema(
   {
     user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
-      require: [true, "Review must belong to user."],
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: [true, "يجب تحديد المستخدم"],
+      unique: [true, "لا يمكن إضافة أكثر من تقييم لنفس المستخدم"],
     },
     rating: {
       type: Number,
-      required: [true, "Rating is required"],
-      min: [1, "Rating must be at least 1."],
-      max: [5, "Rating must be at most 5."],
+      required: [true, "يجب تحديد التقييم"],
+      min: [1, "التقييم يجب أن يكون بين 1 و 5"],
+      max: [5, "التقييم يجب أن يكون بين 1 و 5"],
     },
-    content: String,
+    content: {
+      type: String,
+      required: [true, "يجب كتابة محتوى التقييم"],
+      trim: true,
+      minlength: [10, "محتوى التقييم يجب أن يكون على الأقل 10 أحرف"],
+      maxlength: [500, "محتوى التقييم يجب أن لا يتجاوز 500 حرف"],
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+      select: false,
+    },
+    public: {
+      type: Boolean,
+      default: true,
+      select: false,
+    }
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
 
-// Add index for better query performance
-reviewSchema.index({ user: 1 });
+// Indexes
+reviewSchema.index({ user: 1 }, { unique: true });
+reviewSchema.index({ createdAt: -1 });
 
-// Pre-find hook to automatically populate user data
+// Populate user info when querying
 reviewSchema.pre(/^find/, function (next) {
   this.populate({
     path: "user",
-    select: "fname lname photo",
+    select: "fname lname email photo",
   });
   next();
 });
 
 const Review = mongoose.model("Review", reviewSchema);
+
 module.exports = Review;

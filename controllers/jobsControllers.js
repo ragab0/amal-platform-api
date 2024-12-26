@@ -65,7 +65,7 @@ exports.getJob = catchAsyncMiddle(async (req, res, next) => {
     query.isActive = true;
   }
 
-  const job = await Job.findOne(query).select("+isActive");
+  const job = await Job.findOne(query);
 
   if (!job) {
     return next(new AppError("الوظيفة غير موجودة", 404));
