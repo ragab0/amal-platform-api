@@ -9,7 +9,7 @@ cvsRouter
   .route("/")
   .get(authControllers.assignableTo("admin"), cvsControllers.getAllCVs);
 cvsRouter
-  .route("/:tempId")
+  .route("/:cvId")
   .get(cvsControllers.getCV)
   .put(cvsControllers.updateCV)
   .delete(authControllers.assignableTo("admin"), cvsControllers.unActiveCV);

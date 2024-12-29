@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/ragab0/amal-platform-api#readme",
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.5",
     "connect-timeout": "^1.9.0",
@@ -41,6 +42,7 @@
     "mongoose": "^8.8.3",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.16",
+    "openai": "^4.77.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-linkedin-oauth2": "github:auth0/passport-linkedin-oauth2",

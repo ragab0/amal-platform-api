@@ -1,8 +1,7 @@
-// { type: [skill], default: [] }
 const mongoose = require("mongoose");
 
-const skill = mongoose.Schema({
-  name: { type: String, required: [true, "Skill name is required."] },
+const skill = new mongoose.Schema({
+  name: { type: String, required: [true, "اسم المهارة مطلوب"] },
   levelPercentage: {
     type: Number,
     default: 100,
@@ -13,10 +12,13 @@ const skill = mongoose.Schema({
   },
 });
 
-const skillsSchema = new mongoose.Schema({
+const skillsContainer = new mongoose.Schema({
   description: String,
   interests: String,
   languages: {
+    type: [skill],
+  },
+  softSkills: {
     type: [skill],
   },
   otherSkills: {
@@ -24,4 +26,4 @@ const skillsSchema = new mongoose.Schema({
   },
 });
 
-module.exports = skillsSchema;
+module.exports = skillsContainer;

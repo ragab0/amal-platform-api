@@ -9,11 +9,11 @@ const currentPlan = new mongoose.Schema({
   },
   startDate: {
     type: Date,
-    required: [true, "Start date is required."],
+    required: [true, "تاريخ البدء مطلوب"],
   },
   endDate: {
     type: Date,
-    required: [true, "End date is required."],
+    required: [true, "تاريخ الانتهاء مطلوب"],
   },
 });
 
@@ -21,40 +21,40 @@ const userSchema = new mongoose.Schema(
   {
     fname: {
       type: String,
-      required: [true, "First name is required."],
-      minlength: [3, "First name must be at least 3 characters long."],
-      maxlength: [50, "First name cannot exceed 50 characters."],
+      required: [true, "الاسم الأول مطلوب"],
+      minlength: [3, "يجب أن يكون الاسم الأول 3 أحرف على الأقل"],
+      maxlength: [50, "لا يمكن أن يتجاوز الاسم الأول 50 حرفًا"],
       validate: {
         validator: function (value) {
           return /^[\u0600-\u06FFa-zA-Z\s]+$/.test(value);
         },
-        message: "First name ",
+        message: "الاسم الأول يجب أن يحتوي على حروف عربية أو إنجليزية فقط",
       },
     },
     lname: {
       type: String,
-      required: [true, "Last name is required."],
-      minlength: [3, "Last name must be at least 3 characters long."],
-      maxlength: [50, "Last name cannot exceed 50 characters."],
+      required: [true, "اسم العائلة مطلوب"],
+      minlength: [3, "يجب أن يكون اسم العائلة 3 أحرف على الأقل"],
+      maxlength: [50, "لا يمكن أن يتجاوز اسم العائلة 50 حرفًا"],
       validate: {
         validator: function (value) {
           return /^[\u0600-\u06FFa-zA-Z\s]+$/.test(value);
         },
-        message: "Last name ",
+        message: "اسم العائلة يجب أن يحتوي على حروف عربية أو إنجليزية فقط",
       },
     },
     email: {
       type: String,
       unique: true,
-      required: [true, "Email address is required."],
+      required: [true, "البريد الإلكتروني مطلوب"],
       lowercase: true,
-      maxlength: [255, "Email address cannot exceed 255 characters."],
+      maxlength: [255, "لا يمكن أن يتجاوز البريد الإلكتروني 255 حرفًا"],
       validate: {
         validator: function (value) {
           return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value);
         },
         message:
-          "Email address must be in the pattern of (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/).",
+          "البريد الإلكتروني يجب أن يكون في الشكل الصحيح (مثال: example@example.com)",
       },
     },
     googleId: {
@@ -64,22 +64,21 @@ const userSchema = new mongoose.Schema(
     },
     headline: {
       type: String,
-      required: [true, "Headline is required."],
-      minlength: [3, "Headline must be at least 3 characters long."],
-      maxlength: [128, "Headline cannot exceed 128 characters."],
+      required: [true, "العنوان مطلوب"],
+      minlength: [3, "يجب أن يكون العنوان 3 أحرف على الأقل"],
+      maxlength: [128, "لا يمكن أن يتجاوز العنوان 128 حرفًا"],
       validate: {
         validator: function (value) {
           return /^[\u0600-\u06FFa-zA-Z\s_\|\-]+$/.test(value);
         },
-        message:
-          "Headline must only contain letters, on space or the symbols (_|-) between each word",
+        message: "يجب أن يحتوي العنوان على حروف فقط، مع مسافات أو الرموز (_|-)",
       },
     },
     password: {
       type: String,
-      required: [true, "Password is required."],
-      minlength: [8, "Password must be at least 8 characters long."],
-      maxlength: [128, "Password cannot exceed 128 characters."],
+      required: [true, "كلمة المرور مطلوبة"],
+      minlength: [8, "يجب أن تكون كلمة المرور 8 أحرف على الأقل"],
+      maxlength: [128, "لا يمكن أن تتجاوز كلمة المرور 128 حرفًا"],
       validate: {
         validator: function (value) {
           return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d\s!@#$%^&*(),.?":{}|<>]{8,128}$/.test(
@@ -87,33 +86,30 @@ const userSchema = new mongoose.Schema(
           );
         },
         message:
-          "Password must be 8-128 characters long, include uppercase and lowercase letters, numbers, and special characters.",
+          "يجب أن تحتوي كلمة المرور على 8-128 حرفًا، وتشمل أحرفًا كبيرة وصغيرة وأرقامًا ورموزًا خاصة",
       },
       select: false,
     },
     passwordConfirm: {
       type: String,
-      required: [true, "Password confirmation is required."],
-      minlength: [
-        8,
-        "Password confirmation must be at least 8 characters long.",
-      ],
-      maxlength: [128, "Password confirmation cannot exceed 128 characters."],
-      select: false,
+      required: [true, "تأكيد كلمة المرور مطلوب"],
+      minlength: [8, "يجب أن يكون تأكيد كلمة المرور 8 أحرف على الأقل"],
+      maxlength: [128, "لا يمكن أن يتجاوز تأكيد كلمة المرور 128 حرفًا"],
       validate: {
         validator: function (curr) {
           return curr === this.password;
         },
-        message: "Passwords do not match.",
+        message: "كلمات المرور غير متطابقة",
       },
+      select: false,
     },
     role: {
       type: String,
-      required: [true, "Role is required."],
       enum: {
         values: ["user"],
-        message: `Role must be one of ["user"]`,
+        message: "الدور يجب أن يكون مستخدم فقط user",
       },
+      default: "user",
     },
     isVerified: {
       type: Boolean,
@@ -172,11 +168,11 @@ const userSchema = new mongoose.Schema(
     },
     language: {
       type: String,
-      default: "ar",
       enum: {
         values: ["en", "ar"],
-        message: `Language must be one of ["en", "ar"]`,
+        message: "اللغة غير صحيحة, يمكن استخدام 'en' و 'ar' فقط",
       },
+      default: "ar",
     },
     isActive: {
       type: Boolean,

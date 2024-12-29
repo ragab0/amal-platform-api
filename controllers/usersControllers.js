@@ -38,11 +38,11 @@ exports.updateUser = catchAsyncMiddle(async (req, res, next) => {
   } else if (req.user._id.toString() === req.body._id) {
     user = req.user;
   } else {
-    return next(new AppError("Not authorized to update this user", 403));
+    return next(new AppError("غير مصرح لك بتحديث هذا المستخدم", 403));
   }
 
   if (!user) {
-    return next(new AppError("User not found", 404));
+    return next(new AppError("المستخدم غير موجود", 404));
   }
 
   let newUser;
@@ -56,7 +56,7 @@ exports.updateUser = catchAsyncMiddle(async (req, res, next) => {
     (filteredBody.password || filteredBody.passwordConfirm)
   ) {
     if (filteredBody.password !== filteredBody.passwordConfirm) {
-      return next(new AppError("Passwords do not match", 400));
+      return next(new AppError("كلمة المرور غير متطابقة", 400));
     }
     if (filteredBody.email) {
       user.email = filteredBody.email;
@@ -84,11 +84,11 @@ exports.deleteUser = catchAsyncMiddle(async (req, res, next) => {
   } else if (req.user._id.toString() === req.params.userId) {
     user = req.user;
   } else {
-    return next(new AppError("Not authorized to delete this user", 403));
+    return next(new AppError("غير مصرح لك بحذف هذا المستخدم", 403));
   }
 
   if (!user) {
-    return next(new AppError("User not found", 404));
+    return next(new AppError("المستخدم غير موجود", 404));
   }
 
   // Store user data before deletion

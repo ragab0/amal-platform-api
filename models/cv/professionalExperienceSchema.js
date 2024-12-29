@@ -7,22 +7,17 @@ const professionalExperienceSchema = new mongoose.Schema({
   country: String,
   startDate: {
     type: Date,
-    required: [true, "Start date is required."],
   },
   endDate: {
     type: Date,
-    required: [true, "End date is required."],
     validate: {
       validator: function (value) {
         return !this.startDate || value >= this.startDate;
       },
-      message: "End date must be after start date.",
+      message: "يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء",
     },
   },
-  description: {
-    type: String,
-    // required: [true, "Description is required."],
-  },
+  description: String,
 });
 
 module.exports = professionalExperienceSchema;

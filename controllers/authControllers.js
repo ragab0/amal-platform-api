@@ -57,7 +57,7 @@ const signup = catchAsyncMiddle(async function (req = rq, res = rs, next) {
     await cv.save({ session });
     await session.commitTransaction();
     console.log("Commited transaction");
-    sendResult(res, "Done", 201);
+    sendResult(res, "تم التسجيل بنجاح", 201);
   } catch (error) {
     await session.abortTransaction();
     throw error;
@@ -75,16 +75,16 @@ const generateVerificationCode = catchAsyncMiddle(async function (
   const { email } = req.body;
 
   if (!email || typeof email !== "string") {
-    return next(new AppError("Please provide email address!", 400));
+    return next(new AppError("يرجى تقديم عنوان بريد إلكتروني", 400));
   }
 
   const user = await User.findOne({ email: email.toLocaleLowerCase().trim() });
   if (!user) {
-    return next(new AppError("Invalid email address!", 404));
+    return next(new AppError("عنوان البريد الإلكتروني غير صالح", 404));
   }
 
   if (user.isVerified) {
-    return next(new AppError("Email is already verified!", 400));
+    return next(new AppError("البريد الإلكتروني موثق بالفعل", 400));
   }
 
   const verificationCode = user.createVerificationCode();
@@ -94,14 +94,14 @@ const generateVerificationCode = catchAsyncMiddle(async function (
     const emailInstance = new Email(user);
     await emailInstance.sendVerificationCode(verificationCode);
     sendResult(res, {
-      message: "Verification code sent successfully!",
+      message: "تم إرسال رمز التحقق بنجاح",
     });
   } catch (error) {
     user.clearVerificationCode();
     await user.save({ validateBeforeSave: false });
     return next(
       new AppError(
-        "Failed to send verification code. Please try again later.",
+        "فشل في إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقًا",
         500
       )
     );
@@ -113,9 +113,7 @@ const verifyEmail = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   const { email, code } = req.body;
 
   if (!email || !code || typeof email !== "string") {
-    return next(
-      new AppError("Please provide both email and verification code!", 400)
-    );
+    return next(new AppError("يرجى تقديم البريد الإلكتروني ورمز التحقق!", 400));
   }
 
   const user = await User.findOne({
@@ -125,11 +123,11 @@ const verifyEmail = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   );
 
   if (!user) {
-    return next(new AppError("Invalid email address!", 404));
+    return next(new AppError("عنوان البريد الإلكتروني غير صالح!", 404));
   }
 
   if (!user.verifyCode(code)) {
-    return next(new AppError("Invalid or expired verification code!", 400));
+    return next(new AppError("رمز التحقق غير صالح أو منتهي الصلاحية!", 400));
   }
 
   // Clear verification data after successful verification
@@ -140,7 +138,7 @@ const verifyEmail = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   const token = signToken(user);
   setCookie(res, token);
   sendResult(res, {
-    message: "Email verified successfully!",
+    message: "تم التحقق من البريد الإلكتروني بنجاح!",
   });
 });
 
@@ -159,7 +157,7 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   ) {
     console.log("Invalid input validation:", { email, password });
     return next(
-      new AppError("Please provide a valid email and password", 400, {
+      new AppError("يرجى تقديم بريد إلكتروني وكلمة مرور صالحين", 400, {
         email,
         password,
       })
@@ -179,7 +177,7 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
       await user.save({ validateBeforeSave: false });
       return next(
         new AppError(
-          "Account locked due to too many failed attempts. Try again after 1 minue",
+          "تم قفل الحساب بسبب محاولات فاشلة كثيرة. حاول مرة أخرى بعد دقيقة واحدة",
           423
         )
       );
@@ -192,7 +190,9 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
     !user.password ||
     !(await user.comparePassword(password, user.password))
   ) {
-    return next(new AppError("Invalid email or password", 400));
+    return next(
+      new AppError("البريد الإلكتروني أو كلمة المرور غير صحيحة", 400)
+    );
   }
 
   // Reset login attempts on successful login
@@ -209,7 +209,7 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
     return sendResult(
       res,
       {
-        message: "Email verification required",
+        message: "التحقق من البريد الإلكتروني مطلوب",
         payload: {
           isVerified: false,
           email: user.email,
@@ -244,14 +244,13 @@ const isLogin = catchAsyncMiddle(async function (req = rq, res = rs) {
 const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   let token;
   console.log("Cookies:", { ...req.cookies });
-  console.log("Headers:", req.headers.authorization);
 
   if (req.headers.authorization?.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
   } else if (req.cookies[COOKIE_NAME]) {
     token = req.cookies[COOKIE_NAME];
   } else {
-    return next(new AppError("Login to get access!", 401));
+    return next(new AppError("سجل دخول للحصول على الوصول!", 401));
   }
 
   // verified or JsonWebTokenError;
@@ -259,11 +258,13 @@ const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   // is the user not CUSTOMLY changed,deleted (by admin or db designer)
   const currentUser = await User.findById(id);
   if (!currentUser) {
-    return next(new AppError("User doesn't longer exist!", 400));
+    return next(new AppError("المستخدم لم يعد موجودا!", 400));
   }
   // is the user password has not been changed after the token iat;
   if (currentUser.isPasswordChangedAfter(iat)) {
-    return next(new AppError("Password has been changed, login again.", 400));
+    return next(
+      new AppError("تم تغيير كلمة المرور، يرجى تسجيل الدخول مرة أخرى.", 400)
+    );
   }
   // pass the current user to the next middles that was requires protection;
   req.user = currentUser;
@@ -276,10 +277,7 @@ const assignableTo = function (...roles) {
     const { role } = req.user;
     if (!roles.includes(role)) {
       return next(
-        new AppError(
-          `As ${role}, you don't have permision to perfrom this action!`,
-          403
-        )
+        new AppError(`ك ${role}, لا تمتلك صلاحيات للقيام بهذا الإجراء!`, 403)
       );
     }
     next();
@@ -308,19 +306,13 @@ const forgotPassword = catchAsyncMiddle(async function (
   // Clean email
   const email = req.body.email?.toLocaleLowerCase().trim();
   if (!email) {
-    return next(new AppError("Please provide your email address", 400));
+    return next(new AppError("يرجى تقديم عنوان بريد إلكتروني", 400));
   }
 
   // Find user and generate reset token
   const user = await User.findOne({ email });
-
   if (!user) {
-    // Log for monitoring without reveal to client
-    console.log(`Password reset attempted for non-existent email: ${email}`);
-    return sendResult(res, {
-      message:
-        "If this email exists, password reset instructions will be sent.",
-    });
+    return next(new AppError("لا يوجد مستخدم بهذا البريد الإلكتروني", 404));
   }
 
   try {
@@ -344,8 +336,7 @@ const forgotPassword = catchAsyncMiddle(async function (
     );
 
     sendResult(res, {
-      message:
-        "If this email exists, password reset instructions will be sent.",
+      message: "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
     });
   } catch (err) {
     // Clear token and log error
@@ -355,7 +346,10 @@ const forgotPassword = catchAsyncMiddle(async function (
       `Failed to send password reset email to ${user._id}: ${err.message}`
     );
     return next(
-      new AppError("Error sending password reset email. Try again later.", 500)
+      new AppError(
+        "حدث خطأ في إرسال البريد الإلكتروني. يرجى المحاولة مرة أخرى لاحقًا",
+        500
+      )
     );
   }
 });
@@ -379,7 +373,7 @@ const resetPassword = catchAsyncMiddle(async function (
     });
 
     if (!user) {
-      return next(new AppError("Token is invalid or has expired", 400));
+      return next(new AppError("الرمز غير صالح أو منتهي الصلاحية", 400));
     }
 
     // Update password and clear reset token

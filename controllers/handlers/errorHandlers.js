@@ -2,7 +2,7 @@ const AppError = require("../../utils/appError");
 const { NODE_ENV } = process.env;
 
 module.exports = function mainErrorController(err, req, res, next) {
-  console.error("FROM mainErrorController THERE IS AN ERROR:", err);
+  console.error("FROM mainErrorController THERE IS AN ERROR:", err.name, err);
   console.error("THE ERROR STACK:", err.stack);
 
   if (!err.isOperational) {
@@ -16,7 +16,10 @@ module.exports = function mainErrorController(err, req, res, next) {
       err = handleJWTErrors(err);
     } else if (err.name === "PayloadTooLargeError") {
       err = handlePayloadError(err);
-    } else if (false) {
+    }
+    // openai handlers:
+    else if (err.code === "insufficient_quota") {
+      console.log("#########################################");
     } else if (false) {
     } else if (false) {
     } else if (false) {
@@ -40,7 +43,7 @@ module.exports = function mainErrorController(err, req, res, next) {
 };
 
 function handleMongodbValidationError(err) {
-  const operationalError = new AppError("Invalid data", 400);
+  const operationalError = new AppError("بيانات غير صالحة", 400);
   operationalError.errs = Object.keys(err.errors).map((k) => ({
     [k]: err.errors[k].message,
   }));
@@ -48,28 +51,25 @@ function handleMongodbValidationError(err) {
 }
 
 function handleMongodbDuplicateFieldsError(err) {
-  console.log(err);
   const value = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
-
-  const message = `Email ${value} already exists. Please use another email.`;
-  return new AppError(message, 400);
-}
-
-function handleMongooseError(err) {
-  return new AppError("DB connection is failed! please report us", 500);
-}
-
-function handleJWTErrors(err) {
   const operationalError = new AppError(
-    "For your security. Please log in again!",
-    401
+    `القيمة ${value} مستخدمة بالفعل. الرجاء استخدام قيمة أخرى`,
+    400
   );
   return operationalError;
 }
 
-function handlePayloadError(err) {
-  const operationalError = new AppError("Data is too large to process!", 404);
+function handleMongooseError(err) {
+  return new AppError("خطأ في قاعدة البيانات", 500);
+}
+
+function handleJWTErrors(err) {
+  const operationalError = new AppError("الرجاء تسجيل الدخول مرة أخرى", 401);
   return operationalError;
+}
+
+function handlePayloadError(err) {
+  return new AppError("حجم البيانات المرسلة كبير جداً", 404); // 413
 }
 
 // global handler for dev mode
@@ -79,7 +79,8 @@ function globalHandlerDev(err) {
   err.isOperational = "yep";
   return err;
 }
+
 // global handler for pro mode
 function globalHandlerPro() {
-  return new AppError("Something went wrong!", 500);
+  return new AppError("حدث خطأ ما. الرجاء المحاولة مرة أخرى لاحقاً", 500);
 }

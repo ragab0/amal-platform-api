@@ -4,7 +4,7 @@ const User = require("../userModel");
 const personalInfoSchema = new mongoose.Schema({
   fullName: {
     type: String,
-    required: [true, "Full name is required."],
+    required: [true, "الاسم مطلوب"],
   },
   email: {
     ...User.schema.obj.email,

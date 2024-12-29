@@ -19,12 +19,16 @@ exports.getAllCVs = catchAsyncMiddle(async (req, res, next) => {
 exports.getCV = catchAsyncMiddle(async (req, res, next) => {
   let cv;
   if (req.user.role === "admin") {
-    cv = await CV.findById(req.params.cvId).select("+isActive");
+    cv = await CV.findOne(
+      req.params.cvId?.length === 24
+        ? { _id: req.params.cvId }
+        : { user: req.user._id }
+    ).select("+isActive");
   } else {
     cv = await CV.findOne({ user: req.user._id });
   }
   if (!cv) {
-    return next(new AppError("CV not found", 404));
+    return next(new AppError("السيرة الذاتية غير موجودة", 404));
   }
   sendResult(res, cv);
 });
@@ -33,13 +37,17 @@ exports.getCV = catchAsyncMiddle(async (req, res, next) => {
 exports.updateCV = catchAsyncMiddle(async (req, res, next) => {
   let cv;
   if (req.user.role === "admin") {
-    cv = await CV.findByIdAndUpdate(req.params.cvId, req.body, {
-      runValidators: true,
-      new: true,
-    });
+    cv = await CV.findOneAndUpdate(
+      req.params.cvId?.length === 24
+        ? { _id: req.params.cvId }
+        : { user: req.user._id },
+      req.body,
+      {
+        runValidators: true,
+        new: true,
+      }
+    );
   } else {
-    console.log(req.body);
-
     if (req.body.isActive !== undefined) {
       delete req.body.isActive; // Prevent changing isActive through update BY THE USER
     }
@@ -50,7 +58,7 @@ exports.updateCV = catchAsyncMiddle(async (req, res, next) => {
   }
 
   if (!cv) {
-    return next(new AppError("CV not found", 404));
+    return next(new AppError("السيرة الذاتية غير موجودة", 404));
   }
 
   sendResult(res, cv);
@@ -60,7 +68,7 @@ exports.updateCV = catchAsyncMiddle(async (req, res, next) => {
 exports.unActiveCV = catchAsyncMiddle(async (req, res, next) => {
   const cv = await CV.findById(req.params.cvId).select("+isActive");
   if (!cv) {
-    return next(new AppError("CV not found", 404));
+    return next(new AppError("السيرة الذاتية غير موجودة", 404));
   }
   cv.isActive = false;
   await cv.save({ validateBeforeSave: false });

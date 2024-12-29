@@ -16,8 +16,9 @@ const cvsRoutes = require("./routes/cvsRoutes");
 const reviewsRoutes = require("./routes/reviewsRoutes");
 const templatesRoutes = require("./routes/templatesRoutes");
 const usersRoutes = require("./routes/usersRoutes");
-const { corsOptions } = require("./configs/cors");
 const jobsRoutes = require("./routes/jobsRoutes");
+const aiRoutes = require("./routes/aiRoutes");
+const { corsOptions } = require("./configs/cors");
 
 const app = express();
 app.use(cors(corsOptions));
@@ -32,6 +33,7 @@ app.use(compression());
 // mounting the app routes;
 app.use("/api/v1/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/api/v1/auth/", authRoutes);
+app.use("/api/v1/ai/", aiRoutes);
 app.use("/api/v1/cvs", cvsRoutes);
 app.use("/api/v1/templates", templatesRoutes);
 app.use("/api/v1/admin/", adminRoutes);

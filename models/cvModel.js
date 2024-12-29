@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
 const personalInfo = require("./cv/personalInfoSchema");
 const experience = require("./cv/professionalExperienceSchema");
-const skills = require("./cv/skillsSchema");
+const skillsContainer = require("./cv/skillsContainer");
 const education = require("./cv/educationSchema");
 const reference = require("./cv/referenceSchema");
+const volunteerSchema = require("./cv/volunteerSchema");
+const coursesContainer = require("./cv/coursesSchema");
 
 const cvSchema = new mongoose.Schema({
   user: {
@@ -17,20 +19,12 @@ const cvSchema = new mongoose.Schema({
   },
   personalInfo,
   experiences: { type: [experience], default: [] },
-  skills,
+  allSkills: { type: skillsContainer, default: {} },
   educations: { type: [education], default: [] },
+  volunteers: { type: [volunteerSchema], default: [] },
+  courses: { type: [coursesContainer], default: [] },
   references: { type: [reference], default: [] },
 });
-
-// Function to drop all indexes except _id
-// cvSchema.statics.dropIndexes = async function() {
-//   try {
-//     await this.collection.dropIndexes();
-//     console.log('Successfully dropped indexes from CV collection');
-//   } catch (error) {
-//     console.error('Error dropping indexes:', error);
-//   }
-// };
 
 cvSchema.index({ user: 1 });
 
