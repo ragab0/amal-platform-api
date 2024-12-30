@@ -32,12 +32,7 @@ authRouter.get(
 );
 
 // 02 LinkedIn OAuth
-authRouter.get(
-  "/linkedin",
-  passport.authenticate("linkedin", {
-    state: true,
-  })
-);
+authRouter.get("/linkedin", passport.authenticate("linkedin"));
 authRouter.get(
   "/linkedin/callback",
   passport.authenticate("linkedin", {

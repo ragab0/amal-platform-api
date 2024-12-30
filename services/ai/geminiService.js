@@ -1,4 +1,3 @@
-const AppError = require("../../utils/appError");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { generatePrompts, systemPrompt } = require("./prompts");
 

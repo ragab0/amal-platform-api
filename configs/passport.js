@@ -69,7 +69,6 @@ passport.use(
       callbackURL: LINKEDIN_CALLBACK_URL,
       scope: ["openid", "profile", "email"],
       passReqToCallback: true,
-      state: true,
     },
     async (req, accessToken, refreshToken, profile, done) => {
       console.log("LinkedIn profile data:", JSON.stringify(profile, null, 2));

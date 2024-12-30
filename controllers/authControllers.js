@@ -287,6 +287,7 @@ const assignableTo = function (...roles) {
 const logout = catchAsyncMiddle(async function (req = rq, res = rs) {
   // Clear token cookie with all security options
   res.clearCookie(COOKIE_NAME, COOKIE_CONFIG);
+  res.clearCookie("amal-oauth-session");
 
   // If user is logged in, update their instance
   if (req.user) {
