@@ -26,7 +26,7 @@ function signToken(user = {}) {
 
 function setCookie(res = rs, token) {
   res.cookie(COOKIE_NAME, token, {
-    ...COOKIE_CONFIG,
+    // ...COOKIE_CONFIG,
     expires: new Date(
       Date.now() + parseInt(JWT_EXPIRES_IN) * 24 * 60 * 60 * 1000
     ),

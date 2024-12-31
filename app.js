@@ -1,9 +1,9 @@
 const AppError = require("./utils/appError");
 const express = require("express");
-// const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const compression = require("compression");
+// const morgan = require("morgan");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./configs/documentation");
 const passport = require("./configs/passport");
@@ -18,6 +18,7 @@ const templatesRoutes = require("./routes/templatesRoutes");
 const usersRoutes = require("./routes/usersRoutes");
 const jobsRoutes = require("./routes/jobsRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 const { corsOptions } = require("./configs/cors");
 
 const app = express();
@@ -40,6 +41,7 @@ app.use("/api/v1/admin/", adminRoutes);
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/jobs", jobsRoutes);
 app.use("/api/v1/reviews", reviewsRoutes);
+app.use("/api/chat", chatRoutes);
 
 // our main route handler in case a route not matched/handled;
 app.all("*", function (req, res, next) {
