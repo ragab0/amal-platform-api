@@ -43,6 +43,7 @@ authRouter.get(
 
 /* protected routes */
 authRouter.get("/is-login", authControllers.protect, authControllers.isLogin);
+authRouter.post("/is-login", authControllers.protect, authControllers.isLogin);
 // authRouter.post(
 //   "/reset-password",
 //   authControllers.protect,

@@ -255,12 +255,16 @@ const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   console.log("Cookies:", { ...req.cookies });
   console.log("Headers COOKIE:", req.headers.cookie);
 
-  if (req.headers.authorization?.startsWith("Bearer")) {
-    token = req.headers.authorization.split(" ")[1];
-  } else if (req.cookies[COOKIE_NAME]) {
-    token = req.cookies[COOKIE_NAME];
+  if (req.body.TOKEN) {
+    token = req.body.TOKEN; // A TEMP SOLTUION FOR NOW !!!!!!;
   } else {
-    return next(new AppError("سجل دخول للحصول على الوصول!", 401));
+    if (req.headers.authorization?.startsWith("Bearer")) {
+      token = req.headers.authorization.split(" ")[1];
+    } else if (req.cookies[COOKIE_NAME]) {
+      token = req.cookies[COOKIE_NAME];
+    } else {
+      return next(new AppError("سجل دخول للحصول على الوصول!", 401));
+    }
   }
 
   // verified or JsonWebTokenError;
