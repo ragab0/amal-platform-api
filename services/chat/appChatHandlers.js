@@ -1,6 +1,8 @@
 /* Socket.IO event handlers */
 
-function handleJoinRoom(data) {}
+function handleJoinRoom(data) {
+  console.log("handleJoinRoom", data);
+}
 
 function handleMessage(data) {}
 

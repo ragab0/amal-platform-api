@@ -139,6 +139,7 @@ const verifyEmail = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   setCookie(res, token);
   sendResult(res, {
     message: "تم التحقق من البريد الإلكتروني بنجاح!",
+    token,
   });
 });
 
@@ -218,6 +219,7 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
       },
       303
     );
+    n;
   }
 
   // If everything ok, send token
@@ -225,7 +227,11 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   setCookie(res, token);
   console.log("Login successful, token created");
 
-  sendResult(res, user.getBasicInfo());
+  const info = user.getBasicInfo();
+  info.token = token;
+
+  sendResult(res, info);
+  // sendResult(res, user.getBasicInfo());
   console.log(
     `User ${user._id} logged in successfully at ${new Date().toISOString()}`
   );
@@ -234,7 +240,10 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
 const isLogin = catchAsyncMiddle(async function (req = rq, res = rs) {
   // protect middleware already validated;
   if (req.user.isVerified) {
-    sendResult(res, req.user.getBasicInfo());
+    const info = req.user.getBasicInfo();
+    info.token = signToken(req.user);
+    sendResult(res, info);
+    // sendResult(res, req.user.getBasicInfo());
   } else {
     sendResult(res, { isVerified: false }, 401);
   }
@@ -244,6 +253,7 @@ const isLogin = catchAsyncMiddle(async function (req = rq, res = rs) {
 const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   let token;
   console.log("Cookies:", { ...req.cookies });
+  console.log("Headers COOKIE:", req.headers.cookie);
 
   if (req.headers.authorization?.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
