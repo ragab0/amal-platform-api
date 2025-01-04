@@ -5,6 +5,7 @@ const myIoEventHandlers = require("./appChat");
 const http = require("http");
 const { Server: SocketIoServer } = require("socket.io");
 const { corsOptions } = require("./configs/cors");
+const { COOKIE_CONFIG } = require("./configs/headerCookies");
 const { PORT = 3500 } = process.env;
 
 // 0. connect to the db
@@ -15,7 +16,7 @@ connectDatabase();
 const server = http.createServer(app);
 const myIo = new SocketIoServer(server, {
   cors: corsOptions,
-  cookie: true,
+  cookie: COOKIE_CONFIG,
 });
 
 myIoEventHandlers(myIo);
