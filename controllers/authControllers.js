@@ -34,6 +34,14 @@ function setCookie(res = rs, token) {
   return res;
 }
 
+// function setSession(req, user, token) {
+//   req.session.user = {
+//     id: user._id,
+//     role: user.role,
+//     token,
+//   };
+// }
+
 // AUTH signup
 const signup = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   if (req.body.email) req.body.email = req.body.email.toLowerCase().trim();

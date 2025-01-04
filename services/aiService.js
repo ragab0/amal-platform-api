@@ -15,12 +15,12 @@ async function generateAIContent(type, data, user) {
 
       // handle both errors together;
       if (
-        error.code === "insufficient_quota" ||
+        error.code === "insufficient_quota" &&
         geminiError.message?.includes("quota")
       ) {
         throw new AppError("عذراً، لقد تم تعطيل خدمة AI", 400);
       }
-      throw new AppError("فشل في توليد المحتوى من خلال خدمة AI", 400);
+      throw new AppError("فشل توليد المحتوى AI, حاول مجدداً", 400);
     }
   }
 }

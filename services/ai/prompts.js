@@ -50,8 +50,14 @@ const generatePrompts = {
       data,
       _
     ),
-  about: (data, user) => generalContent("about", data, user),
-  skills: (data, _) => generalContent("skills", data, _),
+  about: (data, _) => generalContent("about", data, _),
+  skillsGeneralDesc: (data, _) => generalContent("skills", data, _),
+  interests: (data, _) =>
+    generalContent(
+      "interests/hobies generaly in life for someone that interests in 'the provided data'",
+      data,
+      _
+    ),
 };
 
 module.exports = {
