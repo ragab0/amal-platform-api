@@ -21,6 +21,8 @@ const usersRoutes = require("./routes/usersRoutes");
 const jobsRoutes = require("./routes/jobsRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const notificationRoutes = require("./routes/notificationsRoutes");
+const linkedinDataRouter = require('./routes/linkedinDataRoutes');
 const { corsOptions } = require("./configs/cors");
 const { apiLimiter } = require("./configs/limiter");
 
@@ -50,7 +52,9 @@ app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/jobs", jobsRoutes);
 app.use("/api/v1/reviews", reviewsRoutes);
-app.use("/api/chat", chatRoutes);
+app.use("/api/v1/chats", chatRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/linkedin-data", linkedinDataRouter);
 
 // our main route handler in case a route not matched/handled;
 app.all("*", function (req, res, next) {

@@ -1,12 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const ChatController = require("../controllers/chatController");
+const ChatController = require("../controllers/chatControllers");
+const authControllers = require("../controllers/authControllers");
 
-// Chat Routes
-router.get("/rooms", ChatController.getRooms);
-router.get("/rooms/:roomId", ChatController.getRoom);
-router.post("/rooms/:roomId/close", ChatController.closeRoom);
-router.get("/rooms/:roomId/messages", ChatController.getMessages);
-router.post("/rooms/:roomId/read", ChatController.markAsRead);
+/** Private routes */
+router.use(authControllers.protect);
+
+/** Route-Level auth - admin only */
+router.get(
+  "/",
+  authControllers.assignableTo("admin"),
+  ChatController.getAllRooms
+);
+
+/** Controller-Level auth - admin only && user owner */
+router.get("/:roomId", ChatController.getRoom);
 
 module.exports = router;

@@ -3,17 +3,17 @@ const reviewsRouter = require("express").Router();
 const authControllers = require("../controllers/authControllers");
 
 /* Public routes */
-reviewsRouter.get("/public", reviewsControllers.getAllReviews);
+reviewsRouter.get("/public", reviewsControllers.getAllPublicReviews);
 
-/* Protected routes && Controller-Level authorization - User can CRUD their own reviews */
+/* Protected routes */
 reviewsRouter.use(authControllers.protect);
 
+// Route-Level auth - admin only
 reviewsRouter
   .route("/")
   .get(
-    // Route-Level
-    authControllers.assignableTo("admin")
-    // reviewsControllers.getAllReviewsAdmin
+    authControllers.assignableTo("admin"),
+    reviewsControllers.getAllReviewsAdmin
   )
   .post(reviewsControllers.createReview);
 reviewsRouter

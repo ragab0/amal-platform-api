@@ -233,13 +233,7 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   // If everything ok, send token
   const token = signToken(user);
   setCookie(res, token);
-  console.log("Login successful, token created");
-
-  const info = user.getBasicInfo();
-  info.token = token;
-
-  sendResult(res, info);
-  // sendResult(res, user.getBasicInfo());
+  sendResult(res, user.getBasicInfo());
   console.log(
     `User ${user._id} logged in successfully at ${new Date().toISOString()}`
   );
@@ -248,10 +242,7 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
 const isLogin = catchAsyncMiddle(async function (req = rq, res = rs) {
   // protect middleware already validated;
   if (req.user.isVerified) {
-    const info = req.user.getBasicInfo();
-    info.token = signToken(req.user);
-    sendResult(res, info);
-    // sendResult(res, req.user.getBasicInfo());
+    sendResult(res, req.user.getBasicInfo());
   } else {
     sendResult(res, { isVerified: false }, 401);
   }
@@ -260,19 +251,15 @@ const isLogin = catchAsyncMiddle(async function (req = rq, res = rs) {
 // AUTH protection
 const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   let token;
-  console.log("Cookies:", { ...req.cookies });
-  console.log("Headers COOKIE:", req.headers.cookie);
+  // console.log("Cookies:", { ...req.cookies });
+  // console.log("Headers COOKIE:", req.headers.cookie);
 
-  if (req.body.TOKEN) {
-    token = req.body.TOKEN; // A TEMP SOLTUION FOR NOW !!!!!!;
+  if (req.headers.authorization?.startsWith("Bearer")) {
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies[COOKIE_NAME]) {
+    token = req.cookies[COOKIE_NAME];
   } else {
-    if (req.headers.authorization?.startsWith("Bearer")) {
-      token = req.headers.authorization.split(" ")[1];
-    } else if (req.cookies[COOKIE_NAME]) {
-      token = req.cookies[COOKIE_NAME];
-    } else {
-      return next(new AppError("سجل دخول للحصول على الوصول!", 401));
-    }
+    return next(new AppError("يرجى تسجيل الدخول أولاً!", 401));
   }
 
   // verified or JsonWebTokenError;

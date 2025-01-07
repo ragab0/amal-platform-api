@@ -22,7 +22,7 @@ info:
     - Password reset: 5 requests per hour
 
 servers:
-  - url: https://amal-platform-api.onrender.com/
+  - url: https://api.job.sa/
   - url: http://localhost:3000
     description: Local development
 

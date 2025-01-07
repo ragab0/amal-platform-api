@@ -6,6 +6,7 @@ const http = require("http");
 const { Server: SocketIoServer } = require("socket.io");
 const { corsOptions } = require("./configs/cors");
 const { COOKIE_CONFIG } = require("./configs/headerCookies");
+const { protectSocket } = require("./controllers/socketControllers");
 const { PORT = 3500 } = process.env;
 
 // 0. connect to the db
@@ -19,6 +20,7 @@ const myIo = new SocketIoServer(server, {
   cookie: COOKIE_CONFIG,
 });
 
+myIo.use(protectSocket);
 myIoEventHandlers(myIo);
 
 // 1. run the server;

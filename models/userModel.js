@@ -184,8 +184,27 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+// Virtual populate for user's review
+userSchema.virtual("myReview", {
+  ref: "Review",
+  foreignField: "user",
+  localField: "_id",
+  justOne: true, // Since each user can have only one review
+});
+// Pre-find middleware to populate review
+userSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "myReview",
+  });
+  next();
+});
 
 /** model hooks */
 
@@ -235,6 +254,7 @@ userSchema.methods.getBasicInfo = function () {
     photo: this.photo,
     phone: this.phone,
     language: this.language,
+    myReview: this.myReview,
   };
 };
 

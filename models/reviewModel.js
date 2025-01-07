@@ -21,16 +21,16 @@ const reviewSchema = new mongoose.Schema(
       minlength: [10, "محتوى التقييم يجب أن يكون على الأقل 10 أحرف"],
       maxlength: [500, "محتوى التقييم يجب أن لا يتجاوز 500 حرف"],
     },
-    isActive: {
+    isPublic: {
       type: Boolean,
-      default: true,
+      default: false,
       select: false,
     },
-    public: {
+    isApproved: {
       type: Boolean,
-      default: true,
+      default: false,
       select: false,
-    }
+    },
   },
   {
     timestamps: true,
