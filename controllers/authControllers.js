@@ -25,6 +25,7 @@ function signToken(user = {}) {
 }
 
 function setCookie(res = rs, token) {
+  console.log("token of cookie is:", token);
   res.cookie(COOKIE_NAME, token, {
     ...COOKIE_CONFIG,
     expires: new Date(
