@@ -247,8 +247,8 @@ const isLogin = catchAsyncMiddle(async function (req = rq, res = rs) {
 // AUTH protection
 const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   let token;
-  // console.log("Cookies:", { ...req.cookies });
-  // console.log("Headers COOKIE:", req.headers.cookie);
+  console.log("PROTECT Cookies:", { ...req.cookies });
+  console.log("PROTECT Headers COOKIE:", req.headers.cookie);
 
   if (req.headers.authorization?.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
