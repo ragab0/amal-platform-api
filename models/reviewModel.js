@@ -5,8 +5,8 @@ const reviewSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.ObjectId,
       ref: "User",
-      required: [true, "يجب تحديد المستخدم"],
       unique: [true, "لا يمكن إضافة أكثر من تقييم لنفس المستخدم"],
+      required: [true, "يجب تحديد المستخدم"],
     },
     rating: {
       type: Number,
@@ -51,6 +51,17 @@ reviewSchema.pre(/^find/, function (next) {
   });
   next();
 });
+
+/** instance methods */
+reviewSchema.methods.getBasicInfo = function () {
+  return {
+    _id: this._id,
+    content: this.content,
+    rating: this.rating,
+    createdAt: this.createdAt,
+    updatedAt: this.updatedAt,
+  };
+};
 
 const Review = mongoose.model("Review", reviewSchema);
 

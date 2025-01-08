@@ -51,14 +51,24 @@ exports.getReview = catchAsyncMiddle(async (req, res, next) => {
   sendResult(res, review);
 });
 
-// Protected controller;
+// Protected controller - owner only;
 exports.createReview = catchAsyncMiddle(async (req, res, next) => {
   delete req.body.isPublic;
   delete req.body.isApproved;
-  req.body.user = req.user._id;
 
-  const review = await Review.create(req.body, { runValidators: true });
-  sendResult(res, review);
+  const hasReview = await Review.findOne({
+    user: req.user._id,
+  });
+
+  if (hasReview) {
+    return next(new AppError("يوجد لديك تقييم موجود بالفعل", 400));
+  }
+
+  const review = new Review({ ...req.body, user: req.user._id });
+  await review.save({
+    validateBeforeSave: true,
+  });
+  sendResult(res, review.getBasicInfo(), 201);
 });
 
 // Controller-Level authorization - Update review (admin or owner)
@@ -85,19 +95,12 @@ exports.updateReview = catchAsyncMiddle(async (req, res, next) => {
     return next(new AppError("التقييم غير موجود", 404));
   }
 
-  sendResult(res, review);
+  sendResult(res, review.getBasicInfo());
 });
 
-// Controller-Level authorization - Delete review (admin or owner)
+// Protected controller - owner only
 exports.deleteReview = catchAsyncMiddle(async (req, res, next) => {
-  let query;
-  if (req.user.role === "admin") {
-    query = { _id: req.params.reviewId };
-  } else {
-    query = { user: req.user._id };
-  }
-
-  const review = await Review.findOneAndDelete(query);
+  const review = await Review.findOneAndDelete({ user: req.user._id });
   if (!review) {
     return next(new AppError("التقييم غير موجود", 404));
   }

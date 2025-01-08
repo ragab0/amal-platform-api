@@ -198,13 +198,6 @@ userSchema.virtual("myReview", {
   localField: "_id",
   justOne: true, // Since each user can have only one review
 });
-// Pre-find middleware to populate review
-userSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: "myReview",
-  });
-  next();
-});
 
 /** model hooks */
 
@@ -243,7 +236,8 @@ userSchema.methods.clearPasswordResetToken = function () {
   this.passwordResetExpires = undefined;
 };
 
-userSchema.methods.getBasicInfo = function () {
+userSchema.methods.getBasicInfo = async function () {
+  await this.populate("myReview");
   return {
     _id: this._id,
     fname: this.fname,
@@ -254,7 +248,8 @@ userSchema.methods.getBasicInfo = function () {
     photo: this.photo,
     phone: this.phone,
     language: this.language,
-    myReview: this.myReview,
+    country: this.country,
+    myReview: this.myReview?.getBasicInfo() || null,
   };
 };
 

@@ -154,7 +154,7 @@ const verifyEmail = catchAsyncMiddle(async function (req = rq, res = rs, next) {
 // AUTH login
 const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   const { email, password } = req.body;
-  console.log("Login attempt for email:", email);
+  console.log("Login try for email:", email);
 
   if (
     !email ||
@@ -164,12 +164,8 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
     email.trim() === "" ||
     password.trim() === ""
   ) {
-    console.log("Invalid input validation:", { email, password });
     return next(
-      new AppError("يرجى تقديم بريد إلكتروني وكلمة مرور صالحين", 400, {
-        email,
-        password,
-      })
+      new AppError("يرجى تقديم بريد إلكتروني وكلمة مرور صالحين", 400)
     );
   }
 
@@ -227,13 +223,12 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
       },
       303
     );
-    n;
   }
 
   // If everything ok, send token
   const token = signToken(user);
   setCookie(res, token);
-  sendResult(res, user.getBasicInfo());
+  sendResult(res, await user.getBasicInfo());
   console.log(
     `User ${user._id} logged in successfully at ${new Date().toISOString()}`
   );
@@ -242,7 +237,7 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
 const isLogin = catchAsyncMiddle(async function (req = rq, res = rs) {
   // protect middleware already validated;
   if (req.user.isVerified) {
-    sendResult(res, req.user.getBasicInfo());
+    sendResult(res, await req.user.getBasicInfo());
   } else {
     sendResult(res, { isVerified: false }, 401);
   }
@@ -407,7 +402,7 @@ const resetPassword = catchAsyncMiddle(async function (
     setCookie(res, token);
 
     // Send minimal user info
-    sendResult(res, user.getBasicInfo());
+    sendResult(res, await user.getBasicInfo());
   } catch (err) {
     console.error(`Password reset failed: ${err.message}`);
     return next(

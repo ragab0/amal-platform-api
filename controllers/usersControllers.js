@@ -25,7 +25,7 @@ const updateSets = {
   accountInfo: ["email", "password", "passwordConfirm"],
 };
 
-// Controller-Level authorization - admin anyone, user only himself;
+// Controller-Level authorization - admin himself && anyone, user only himself;
 exports.updateUser = catchAsyncMiddle(async (req, res, next) => {
   const updateSet = updateSets[req.query.updateSet];
   let user;
@@ -33,7 +33,7 @@ exports.updateUser = catchAsyncMiddle(async (req, res, next) => {
     delete req.body.role;
   }
 
-  if (req.user.role === "admin") {
+  if (req.user.role === "admin" && req.body._id !== req.user._id) {
     user = await User.findById(req.body._id);
   } else if (req.user._id.toString() === req.body._id) {
     user = req.user;
@@ -73,7 +73,7 @@ exports.updateUser = catchAsyncMiddle(async (req, res, next) => {
     );
   }
 
-  sendResult(res, newUser.getBasicInfo());
+  sendResult(res, await newUser.getBasicInfo());
 });
 
 // Controller-Level authorization - admin anyone, user only himself;
