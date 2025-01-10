@@ -60,7 +60,7 @@ function handleMongodbDuplicateFieldsError(err) {
 }
 
 function handleMongooseError(err) {
-  return new AppError("خطأ في قاعدة البيانات", 500);
+  return new AppError("خطأ في قاعدة البيانات", 400);
 }
 
 function handleJWTErrors(err) {

@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-const { EMAIL_USERNAME: user, EMAIL_PASSWORD: pass, NODE_ENV } = process.env;
+const { EMAIL_USERNAME, EMAIL_PASSWORD, NODE_ENV } = process.env;
 
 class Email {
   constructor(user) {
@@ -28,8 +28,8 @@ class Email {
     return nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user,
-        pass,
+        user: EMAIL_USERNAME,
+        pass: EMAIL_PASSWORD,
       },
     });
   }
@@ -57,13 +57,14 @@ class Email {
 
       return info;
     } catch (error) {
+      console.log("EMAIL SEND ERROR:", error);
       throw error;
     }
   }
 
+  // 01 send;
   async sendVerificationCode(verificationCode) {
     const subject = "Email Verification Code";
-
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Welcome to Amal!</h2>
@@ -77,7 +78,6 @@ class Email {
         <p>Best regards,<br>The Amal Team</p>
       </div>
     `;
-
     const text = `
       Welcome to Amal!
       
@@ -103,6 +103,7 @@ class Email {
     });
   }
 
+  // 02 send;
   async sendPasswordReset(email, resetURL) {
     return this.send({
       email,

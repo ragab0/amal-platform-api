@@ -89,7 +89,7 @@ const generateVerificationCode = catchAsyncMiddle(async function (
 
   const user = await User.findOne({ email: email.toLocaleLowerCase().trim() });
   if (!user) {
-    return next(new AppError("عنوان البريد الإلكتروني غير صالح", 404));
+    return next(new AppError("عنوان البريد الإلكتروني غير صالح", 400));
   }
 
   if (user.isVerified) {
@@ -106,12 +106,13 @@ const generateVerificationCode = catchAsyncMiddle(async function (
       message: "تم إرسال رمز التحقق بنجاح",
     });
   } catch (error) {
+    console.log("EMAIL ERROR:", error);
     user.clearVerificationCode();
     await user.save({ validateBeforeSave: false });
     return next(
       new AppError(
         "فشل في إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقًا",
-        500
+        400
       )
     );
   }
@@ -132,7 +133,7 @@ const verifyEmail = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   );
 
   if (!user) {
-    return next(new AppError("عنوان البريد الإلكتروني غير صالح!", 404));
+    return next(new AppError("عنوان البريد الإلكتروني غير صالح!", 400));
   }
 
   if (!user.verifyCode(code)) {
@@ -318,7 +319,7 @@ const forgotPassword = catchAsyncMiddle(async function (
   // Find user and generate reset token
   const user = await User.findOne({ email });
   if (!user) {
-    return next(new AppError("لا يوجد مستخدم بهذا البريد الإلكتروني", 404));
+    return next(new AppError("لا يوجد مستخدم بهذا البريد الإلكتروني", 400));
   }
 
   try {
@@ -354,7 +355,7 @@ const forgotPassword = catchAsyncMiddle(async function (
     return next(
       new AppError(
         "حدث خطأ في إرسال البريد الإلكتروني. يرجى المحاولة مرة أخرى لاحقًا",
-        500
+        400
       )
     );
   }
@@ -407,7 +408,7 @@ const resetPassword = catchAsyncMiddle(async function (
   } catch (err) {
     console.error(`Password reset failed: ${err.message}`);
     return next(
-      new AppError("Failed to reset password. Please try again.", 500)
+      new AppError("Failed to reset password. Please try again.", 400)
     );
   }
 });
