@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const AppError = require("./appError");
 
 const { EMAIL_USERNAME, EMAIL_PASSWORD, NODE_ENV } = process.env;
 
@@ -34,12 +35,12 @@ class Email {
     });
   }
 
-  async send({ email, subject, text, html }) {
+  async send({ next, email, subject, text, html }) {
     try {
       const transporter = await this.createTransporter();
 
       const mailOptions = {
-        from: `Amal <${user}>`,
+        from: `عمل <${EMAIL_USERNAME}>`,
         to: email,
         subject,
         text,
@@ -57,45 +58,65 @@ class Email {
 
       return info;
     } catch (error) {
-      console.log("EMAIL SEND ERROR:", error);
-      throw error;
+      console.log(`EMAIL SEND ERROR ${error.code}:`, error);
+      if (error.code === "EAUTH") {
+        return next(
+          new AppError("عذراً, تم تعطيل خدمة الايميلات مؤقتاً.", 400)
+        );
+      } else {
+        throw error;
+      }
     }
   }
 
   // 01 send;
-  async sendVerificationCode(verificationCode) {
-    const subject = "Email Verification Code";
+  async sendVerificationCode(next, verificationCode) {
+    const subject = "رمز التحقق من البريد الإلكتروني";
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Welcome to Amal!</h2>
-        <p>Hello ${this.firstName},</p>
-        <p>Thank you for signing up. To complete your registration, please use the following verification code:</p>
-        <div style="background-color: #f4f4f4; padding: 15px; text-align: center; margin: 20px 0;">
-          <h1 style="color: #333; letter-spacing: 5px; margin: 0;">${verificationCode}</h1>
+      <div dir="rtl" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #2c3e50; margin-bottom: 10px;">مرحباً بك في عمل</h1>
+          <p style="color: #34495e; font-size: 16px;">نحن سعداء بانضمامك إلينا</p>
         </div>
-        <p>This code will expire in 10 minutes.</p>
-        <p>If you didn't request this verification code, please ignore this email.</p>
-        <p>Best regards,<br>The Amal Team</p>
+        
+        <p style="color: #2c3e50; font-size: 16px; margin-bottom: 20px;">مرحباً ${this.firstName}،</p>
+        
+        <p style="color: #2c3e50; font-size: 16px; margin-bottom: 20px;">شكراً لتسجيلك معنا. لإكمال عملية التسجيل، يرجى استخدام رمز التحقق التالي:</p>
+        
+        <div style="background-color: #f7f9fc; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
+          <h2 style="color: #2c3e50; letter-spacing: 5px; margin: 0; font-size: 28px;">${verificationCode}</h2>
+        </div>
+        
+        <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 15px;">ينتهي هذا الرمز خلال 10 دقائق</p>
+        
+        <p style="color: #7f8c8d; font-size: 14px;">إذا لم تقم بطلب رمز التحقق هذا، يرجى تجاهل هذا البريد الإلكتروني.</p>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+          <p style="color: #2c3e50; margin-bottom: 5px;">مع تحيات</p>
+          <p style="color: #2c3e50; font-weight: bold;">فريق عمل</p>
+        </div>
       </div>
     `;
+
     const text = `
-      Welcome to Amal!
-      
-      Hello ${this.firstName},
-      
-      Thank you for signing up. To complete your registration, please use the following verification code:
-      
+      مرحباً بك في عمل!
+
+      مرحباً ${this.firstName}،
+
+      شكراً لتسجيلك معنا. لإكمال عملية التسجيل، يرجى استخدام رمز التحقق التالي:
+
       ${verificationCode}
-      
-      This code will expire in 10 minutes.
-      
-      If you didn't request this verification code, please ignore this email.
-      
-      Best regards,
-      The Amal Team
+
+      ينتهي هذا الرمز خلال 10 دقائق.
+
+      إذا لم تقم بطلب رمز التحقق هذا، يرجى تجاهل هذا البريد الإلكتروني.
+
+      مع تحيات
+      فريق عمل
     `;
 
     await this.send({
+      next,
       email: this.email,
       subject,
       text,
@@ -104,27 +125,42 @@ class Email {
   }
 
   // 02 send;
-  async sendPasswordReset(email, resetURL) {
+  async sendPasswordReset(next, email, resetURL) {
     return this.send({
+      next,
       email,
-      subject: "Password Reset (valid for 10 minutes)",
-      text: `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}\nIf you didn't forget your password, please ignore this email!`,
+      subject: "إعادة تعيين كلمة المرور (صالح لمدة 10 دقائق)",
+      text: `
+        هل نسيت كلمة المرور؟ 
+        اضغط على الرابط التالي لإعادة تعيين كلمة المرور: ${resetURL}
+        إذا لم تقم بطلب إعادة تعيين كلمة المرور، يرجى تجاهل هذا البريد الإلكتروني.
+      `,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Password Reset</h2>
-          <p>Hello,</p>
-          <p>You requested a password reset. Click the button below to reset your password:</p>
+        <div dir="rtl" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2c3e50; margin-bottom: 10px;">إعادة تعيين كلمة المرور</h1>
+          </div>
+          
+          <p style="color: #2c3e50; font-size: 16px; margin-bottom: 20px;">مرحباً،</p>
+          
+          <p style="color: #2c3e50; font-size: 16px; margin-bottom: 25px;">لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك. اضغط على الزر أدناه لإعادة التعيين:</p>
+          
           <div style="text-align: center; margin: 30px 0;">
             <a href="${resetURL}" 
-               style="background-color: #4CAF50; color: white; padding: 12px 25px; 
-                      text-decoration: none; border-radius: 5px; display: inline-block;">
-              Reset Password
+               style="background-color: #3498db; color: white; padding: 12px 35px;
+                      text-decoration: none; border-radius: 5px; display: inline-block;
+                      font-size: 16px;">
+              إعادة تعيين كلمة المرور
             </a>
           </div>
-          <p style="color: #666; font-size: 14px;">
-            This link is valid for 10 minutes only.<br>
-            If you didn't request this reset, please ignore this email.
-          </p>
+          
+          <p style="color: #7f8c8d; font-size: 14px; margin-top: 25px;">هذا الرابط صالح لمدة 10 دقائق فقط.</p>
+          <p style="color: #7f8c8d; font-size: 14px;">إذا لم تقم بطلب إعادة التعيين، يرجى تجاهل هذا البريد الإلكتروني.</p>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+            <p style="color: #2c3e50; margin-bottom: 5px;">مع تحيات</p>
+            <p style="color: #2c3e50; font-weight: bold;">فريق عمل</p>
+          </div>
         </div>
       `,
     });

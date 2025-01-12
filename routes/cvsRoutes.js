@@ -7,7 +7,8 @@ cvsRouter.use(authControllers.protect);
 
 cvsRouter
   .route("/")
-  .get(authControllers.assignableTo("admin"), cvsControllers.getAllCVs);
+  .get(authControllers.assignableTo("admin"), cvsControllers.getAllCVs)
+  .post(cvsControllers.createCV);
 cvsRouter
   .route("/:cvId")
   .get(cvsControllers.getCV)

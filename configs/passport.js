@@ -3,6 +3,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const LinkedInStrategy = require("passport-linkedin-oauth2").Strategy;
 const User = require("../models/userModel");
 const Cv = require("../models/cvModel");
+const getValidatedName = require("../utils/validateName");
 
 const {
   GOOGLE_CLIENT_ID,
@@ -27,14 +28,18 @@ passport.use(
         // Check if user exists with email
         let user = await User.findOne({ email: profile.emails[0].value });
         if (!user) {
+          const firstName =
+            profile.name?.givenName || profile.displayName.split(" ")[0];
+          const lastName =
+            profile.name?.familyName ||
+            profile.displayName.split(" ").slice(1).join(" ");
+
           // Create new user with Google profile data
           user = new User({
             role: "user",
             email: profile.emails[0].value,
-            fname: profile.name.givenName || profile.displayName.split(" ")[0],
-            lname:
-              profile.name.familyName ||
-              profile.displayName.split(" ").slice(1).join(" "),
+            fname: getValidatedName(firstName, true),
+            lname: getValidatedName(lastName, false),
             isVerified: true, // Social accounts are pre-verified
             photo: profile.photos[0].value,
           });
@@ -43,8 +48,7 @@ passport.use(
           const cv = new Cv({
             user: user._id,
             personalInfo: {
-              fname: user.fname,
-              lname: user.lname,
+              fullName: `${user.fname} ${user.lname}`,
               photo: user.photo,
               email: user.email,
             },
@@ -71,20 +75,22 @@ passport.use(
       passReqToCallback: true,
     },
     async (req, accessToken, refreshToken, profile, done) => {
-      console.log("LinkedIn profile data:", JSON.stringify(profile, null, 2));
-
       try {
         // Check if user exists with email
         let user = await User.findOne({ email: profile.email });
         if (!user) {
+          const firstName =
+            profile.givenName || profile.displayName.split(" ")[0];
+          const lastName =
+            profile.familyName ||
+            profile.displayName.split(" ").slice(1).join(" ");
+
           // Create new user with LinkedIn profile data
           user = new User({
             role: "user",
             email: profile.email,
-            fname: profile.givenName || profile.displayName.split(" ")[0],
-            lname:
-              profile.familyName ||
-              profile.displayName.split(" ").slice(1).join(" "),
+            fname: getValidatedName(firstName, true),
+            lname: getValidatedName(lastName, false),
             isVerified: true, // Social accounts are pre-verified
             photo: profile.picture,
           });
@@ -93,8 +99,7 @@ passport.use(
           const cv = new Cv({
             user: user._id,
             personalInfo: {
-              fname: user.fname,
-              lname: user.lname,
+              fullName: `${user.fname} ${user.lname}`,
               photo: user.photo,
               email: user.email,
             },

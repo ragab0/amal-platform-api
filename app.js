@@ -22,6 +22,7 @@ const jobsRoutes = require("./routes/jobsRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const notificationRoutes = require("./routes/notificationsRoutes");
+const statsRoutes = require("./routes/statsRoutes");
 // const linkedinDataRouter = require('./routes/linkedinDataRoutes');
 const { corsOptions } = require("./configs/cors");
 const { apiLimiter } = require("./configs/limiter");
@@ -54,11 +55,22 @@ app.use("/api/v1/jobs", jobsRoutes);
 app.use("/api/v1/reviews", reviewsRoutes);
 app.use("/api/v1/chats", chatRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/admin/stats", statsRoutes);
+
 // app.use("/api/v1/linkedin-data", linkedinDataRouter);
 
 // our main route handler in case a route not matched/handled;
 app.all("*", function (req, res, next) {
-  next(new AppError(`Not found: (${req.method}) ${req.originalUrl}`, 404));
+  if (process.env.NODE_ENV === "development") {
+    next(
+      new AppError(
+        `DEV_MODE -Not found: (${req.method}) ${req.originalUrl}`,
+        404
+      )
+    );
+  } else {
+    next(new AppError("طلب غير صالح", 404));
+  }
 });
 
 // our main error handler that will catch any error occurs either was operation/none;

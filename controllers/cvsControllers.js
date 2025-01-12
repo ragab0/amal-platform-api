@@ -28,8 +28,29 @@ exports.getCV = catchAsyncMiddle(async (req, res, next) => {
     cv = await CV.findOne({ user: req.user._id });
   }
   if (!cv) {
-    return next(new AppError("السيرة الذاتية غير موجودة", 404));
+    return next(
+      new AppError("السيرة الذاتية غير موجودة, يرجي بناء واحدة أولاً", 404)
+    );
   }
+  sendResult(res, cv);
+});
+
+// Protected controller;
+exports.createCV = catchAsyncMiddle(async (req, res, next) => {
+  let cv = await CV.findOne({ user: req.user._id });
+  if (cv) {
+    cv = await CV.findOneAndUpdate(
+      { user: req.user._id },
+      { options: req.body.options },
+      {
+        runValidators: true,
+        new: true,
+      }
+    );
+  } else {
+    cv = await CV.create({ ...req.body, user: req.user._id });
+  }
+
   sendResult(res, cv);
 });
 
@@ -58,7 +79,9 @@ exports.updateCV = catchAsyncMiddle(async (req, res, next) => {
   }
 
   if (!cv) {
-    return next(new AppError("السيرة الذاتية غير موجودة", 404));
+    return next(
+      new AppError("السيرة الذاتية غير موجودة, يرجي بناء واحدة أولاً", 404)
+    );
   }
 
   sendResult(res, cv);
@@ -68,7 +91,9 @@ exports.updateCV = catchAsyncMiddle(async (req, res, next) => {
 exports.unActiveCV = catchAsyncMiddle(async (req, res, next) => {
   const cv = await CV.findById(req.params.cvId).select("+isActive");
   if (!cv) {
-    return next(new AppError("السيرة الذاتية غير موجودة", 404));
+    return next(
+      new AppError("السيرة الذاتية غير موجودة, يرجي بناء واحدة أولاً", 404)
+    );
   }
   cv.isActive = false;
   await cv.save({ validateBeforeSave: false });

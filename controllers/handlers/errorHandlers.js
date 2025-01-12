@@ -17,6 +17,7 @@ module.exports = function mainErrorController(err, req, res, next) {
     } else if (err.name === "PayloadTooLargeError") {
       err = handlePayloadError(err);
     }
+
     // openai handlers:
     else if (err.code === "insufficient_quota") {
       console.log("#########################################");

@@ -53,17 +53,17 @@ const signup = catchAsyncMiddle(async function (req = rq, res = rs, next) {
     const user = new User(req.body);
     await user.save({ session });
 
-    const cv = new CV({
-      user: user._id,
-      personalInfo: {
-        fullName: user.fname + " " + user.lname,
-        headline: user.headline,
-        photo: user.photo,
-        phone: user.phone,
-        email: user.email,
-      },
-    });
-    await cv.save({ session });
+    // const cv = new CV({
+    //   user: user._id,
+    //   personalInfo: {
+    //     fullName: user.fname + " " + user.lname,
+    //     headline: user.headline,
+    //     photo: user.photo,
+    //     phone: user.phone,
+    //     email: user.email,
+    //   },
+    // });
+    // await cv.save({ session });
     await session.commitTransaction();
     console.log("Commited transaction");
     sendResult(res, "تم التسجيل بنجاح", 201);
@@ -101,12 +101,11 @@ const generateVerificationCode = catchAsyncMiddle(async function (
 
   try {
     const emailInstance = new Email(user);
-    await emailInstance.sendVerificationCode(verificationCode);
+    await emailInstance.sendVerificationCode(next, verificationCode);
     sendResult(res, {
       message: "تم إرسال رمز التحقق بنجاح",
     });
   } catch (error) {
-    console.log("EMAIL ERROR:", error);
     user.clearVerificationCode();
     await user.save({ validateBeforeSave: false });
     return next(
@@ -333,7 +332,7 @@ const forgotPassword = catchAsyncMiddle(async function (
     )}/api/v1/users/resetPassword/${resetToken}`;
 
     // Send password reset email
-    await Email.sendPasswordReset(user.email, resetURL);
+    await Email.sendPasswordReset(next, user.email, resetURL);
 
     // Log for security monitoring
     console.log(

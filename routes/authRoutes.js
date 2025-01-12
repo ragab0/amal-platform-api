@@ -14,7 +14,7 @@ authRouter.post(
 );
 authRouter.post("/verify-email", authLimiter, authControllers.verifyEmail);
 authRouter.post(
-  "/forgot-password",
+  "/forget-password",
   authLimiter,
   authControllers.forgotPassword
 );

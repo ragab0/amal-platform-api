@@ -6,6 +6,7 @@ const education = require("./cv/educationSchema");
 const reference = require("./cv/referenceSchema");
 const volunteerSchema = require("./cv/volunteerSchema");
 const coursesContainer = require("./cv/coursesSchema");
+const options = require("./cv/optionsSchema");
 
 const cvSchema = new mongoose.Schema({
   user: {
@@ -24,6 +25,11 @@ const cvSchema = new mongoose.Schema({
   volunteers: { type: [volunteerSchema], default: [] },
   courses: { type: [coursesContainer], default: [] },
   references: { type: [reference], default: [] },
+  options: { type: options, default: {} },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 cvSchema.index({ user: 1 });
