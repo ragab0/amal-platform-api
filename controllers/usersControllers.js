@@ -28,11 +28,9 @@ const updateSets = {
 // Controller-Level authorization - admin himself && anyone, user only himself;
 exports.updateUser = catchAsyncMiddle(async (req, res, next) => {
   const updateSet = updateSets[req.query.updateSet];
-  let user;
-  if (req.user.role !== "admin" && req.body.role) {
-    delete req.body.role;
-  }
+  delete req.body.role;
 
+  let user;
   if (req.user.role === "admin" && req.body._id !== req.user._id) {
     user = await User.findById(req.body._id);
   } else if (req.user._id.toString() === req.body._id) {
@@ -45,33 +43,28 @@ exports.updateUser = catchAsyncMiddle(async (req, res, next) => {
     return next(new AppError("المستخدم غير موجود", 404));
   }
 
-  let newUser;
   const filteredBody = Object.fromEntries(
     Object.entries(req.body).filter(([key]) => updateSet.includes(key))
   );
 
-  // Handle password update separately
-  if (
-    req.query.updateSet === "accountInfo" &&
-    (filteredBody.password || filteredBody.passwordConfirm)
-  ) {
+  // MAKE the confirmPassword undefined in case equals password, using save to run hashing;
+  if ("accountInfo" === req.query.updateSet) {
     if (filteredBody.password !== filteredBody.passwordConfirm) {
       return next(new AppError("كلمة المرور غير متطابقة", 400));
     }
-    if (filteredBody.email) {
-      user.email = filteredBody.email;
-    }
-    user.setNewPassword(filteredBody.password);
-    await user.save({ validateBeforeSave: true });
-    newUser = user;
-  } else {
-    // For non-password updates
-    newUser = await User.findByIdAndUpdate(
-      user._id,
-      { $set: { ...filteredBody } },
-      { runValidators: true, new: true }
-    );
+    user.password = filteredBody.password;
+    delete filteredBody.password;
+    delete filteredBody.passwordConfirm;
   }
+
+  let newUser;
+  newUser = await User.findByIdAndUpdate(
+    user._id,
+    { $set: { ...filteredBody } },
+    { runValidators: true, new: true } // $set will run validation on modified fields;
+  );
+
+  console.log("%%%%%%%%%%%%%%%%%%%", newUser);
 
   sendResult(res, await newUser.getBasicInfo());
 });

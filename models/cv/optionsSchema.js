@@ -9,19 +9,20 @@ const optionsSchema = new mongoose.Schema(
     currentFontOptions: {
       fontFamily: {
         type: String,
-        default: "Arial",
+        default: "cairo",
       },
       fontSize: {
         type: Number,
-        default: 12,
+        default: 11,
       },
       titleFontSize: {
         type: Number,
-        default: 16,
+        default: 15,
       },
     },
     currentSupportedColors: {
       type: [String],
+      default: [],
     },
     allowedSectionsFields: {
       type: Map,

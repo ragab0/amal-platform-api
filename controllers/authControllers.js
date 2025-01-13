@@ -294,13 +294,11 @@ const logout = catchAsyncMiddle(async function (req = rq, res = rs) {
   res.clearCookie(COOKIE_NAME, COOKIE_CONFIG);
   res.clearCookie("amal-oauth-session");
 
-  // If user is logged in, update their instance
+  // If user is logged in, update their instance (I THINK NOT WORK WELL)
   if (req.user) {
     req.user.lastLogoutAt = new Date();
     await req.user.save({ validateBeforeSave: false });
   }
-
-  // Send success response
   sendResult(res, null, 200);
 });
 
@@ -318,29 +316,25 @@ const forgotPassword = catchAsyncMiddle(async function (
   // Find user and generate reset token
   const user = await User.findOne({ email });
   if (!user) {
-    return next(new AppError("لا يوجد مستخدم بهذا البريد الإلكتروني", 400));
+    // return next(new AppError("لا يوجد مستخدم بهذا البريد الإلكتروني", 400));
+    return sendResult(
+      res,
+      "تم إرسال رابط إعادة التعيين علي البريد الالكتروني بنجاح"
+    );
   }
 
   try {
-    // Generate reset token
+    // Generate reset token && Create reset URL && Send the mail
     const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
-
-    // Create reset URL
-    const resetURL = `${req.protocol}://${req.get(
-      "host"
-    )}/api/v1/users/resetPassword/${resetToken}`;
-
-    // Send password reset email
-    await Email.sendPasswordReset(next, user.email, resetURL);
-
-    // Log for security monitoring
+    const resetURL = `${FRONTEND_URL}/auth/resetPassword?token=${resetToken}&email=${user.email}`;
+    const emailInstance = new Email(user);
+    await emailInstance.sendPasswordReset(next, user.email, resetURL);
     console.log(
       `Password reset token generated for user ${
         user._id
       } at ${new Date().toISOString()}`
     );
-
     sendResult(res, {
       message: "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني",
     });
@@ -366,30 +360,32 @@ const resetPassword = catchAsyncMiddle(async function (
   next
 ) {
   try {
+    const { token, email, password, passwordConfirm } = req.body;
     // Hash token for comparison
-    const hashedToken = crypto
+    const hashedToken = await crypto
       .createHash("sha256")
-      .update(req.params.token)
+      .update(token)
       .digest("hex");
-
     // Find user and validate token
     const user = await User.findOne({
       passwordResetToken: hashedToken,
       passwordResetExpires: { $gt: Date.now() },
+      email,
     });
 
-    if (!user) {
+    if (!user || !token || !email || !password || !passwordConfirm) {
       return next(new AppError("الرمز غير صالح أو منتهي الصلاحية", 400));
     }
 
     // Update password and clear reset token
-    user.password = req.body.password;
-    user.passwordConfirm = req.body.passwordConfirm;
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
-    user.passwordChangedAt = Date.now();
-
-    await user.save(); // Schema validation will handle password requirements
+    user.setNewPassword(password, true);
+    await user.save({ validateBeforeSave: true, validateModifiedOnly: true });
+    // Only validate password fields
+    const validationOpts = {
+      validateModifiedOnly: true,
+      validateBeforeSave: true,
+    };
+    await user.save(validationOpts);
 
     // Log password change
     console.log(
@@ -397,19 +393,40 @@ const resetPassword = catchAsyncMiddle(async function (
         user._id
       } at ${new Date().toISOString()}`
     );
-
-    // Log user in
-    const token = signToken(user);
-    setCookie(res, token);
-
-    // Send minimal user info
-    sendResult(res, await user.getBasicInfo());
+    sendResult(res, "تم تغيير كلمة المرور بنجاح");
   } catch (err) {
     console.error(`Password reset failed: ${err.message}`);
     return next(
-      new AppError("Failed to reset password. Please try again.", 400)
+      new AppError("فشل تغيير كلمة المرور! يرجى المحاولة مرة أخرى", 400)
     );
   }
+});
+
+const verifyResetToken = catchAsyncMiddle(async function (
+  req = rq,
+  res = rs,
+  next
+) {
+  const { token, email } = req.query;
+
+  try {
+    const hashedToken = await crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+      email,
+    });
+    if (!user)
+      return next(new AppError("الرمز غير صالح أو منتهي الصلاحية", 400));
+  } catch (err) {
+    console.error(err);
+    return next(new AppError("الرمز غير صالح أو منتهي الصلاحية", 400));
+  }
+
+  sendResult(res, "تم التحقق من الرمز بنجاح");
 });
 
 // Provider Auth callback
@@ -432,4 +449,5 @@ module.exports = {
   providerCallback,
   assignableTo,
   resetPassword,
+  verifyResetToken,
 };

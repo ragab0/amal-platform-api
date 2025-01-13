@@ -297,10 +297,14 @@ userSchema.methods.clearVerificationCode = function () {
 };
 
 // Set new password directly without validation
-userSchema.methods.setNewPassword = async function (newPassword) {
+userSchema.methods.setNewPassword = async function (newPassword, resetToken) {
   this.password = newPassword;
   this.passwordConfirm = newPassword;
   this.passwordChangedAt = Date.now();
+  if (resetToken) {
+    this.passwordResetToken = undefined;
+    this.passwordResetExpires = undefined;
+  }
 };
 
 const User = mongoose.model("User", userSchema);

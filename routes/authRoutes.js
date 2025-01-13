@@ -18,6 +18,8 @@ authRouter.post(
   authLimiter,
   authControllers.forgotPassword
 );
+authRouter.post("/reset-password", authControllers.resetPassword);
+authRouter.post("/verify-reset-token", authControllers.verifyResetToken);
 
 /* OAuth routes */
 // 01 Google OAuth
