@@ -23,6 +23,7 @@ exports.getAllUsers = catchAsyncMiddle(async (req, res) => {
 const updateSets = {
   basicInfo: ["fname", "lname", "headline", "phone", "country", "photo"],
   accountInfo: ["email", "password", "passwordConfirm"],
+  image: ["photo"],
 };
 
 // Controller-Level authorization - admin himself && anyone, user only himself;
@@ -53,6 +54,7 @@ exports.updateUser = catchAsyncMiddle(async (req, res, next) => {
       return next(new AppError("كلمة المرور غير متطابقة", 400));
     }
     user.password = filteredBody.password;
+    user.save({ validateBeforeSave: true, validateModifiedOnly: true });
     delete filteredBody.password;
     delete filteredBody.passwordConfirm;
   }

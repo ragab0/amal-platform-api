@@ -70,7 +70,7 @@ function handleJWTErrors(err) {
 }
 
 function handlePayloadError(err) {
-  return new AppError("حجم البيانات المرسلة كبير جداً", 404); // 413
+  return new AppError("حجم البيانات المرسلة كبير جداً", 400); // 413
 }
 
 // global handler for dev mode

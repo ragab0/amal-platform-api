@@ -73,23 +73,20 @@ exports.createReview = catchAsyncMiddle(async (req, res, next) => {
 
 // Controller-Level authorization - Update review (admin or owner)
 exports.updateReview = catchAsyncMiddle(async (req, res, next) => {
+  let query;
   if (req.user.role !== "admin") {
     req.body.isPublic = false; // reset;
     req.body.isApproved = false; // reset;
     req.body.user = req.user._id; // make sure, it's his own;
-    if (req.params.reviewId !== req.user._id) {
-      return next(new AppError("غير مصرح لك بتحديث هذا التقييم", 403));
-    }
+    query = { _id: req.params.reviewId, user: req.user._id };
+  } else {
+    query = { _id: req.params.reviewId };
   }
 
-  const review = await Review.findOneAndUpdate(
-    { _id: req.params.reviewId },
-    req.body,
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+  const review = await Review.findOneAndUpdate(query, req.body, {
+    new: true,
+    runValidators: true,
+  });
 
   if (!review) {
     return next(new AppError("التقييم غير موجود", 404));

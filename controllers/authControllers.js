@@ -263,10 +263,19 @@ const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   // is the user not CUSTOMLY changed,deleted (by admin or db designer)
   const currentUser = await User.findById(id);
   if (!currentUser) {
-    return next(new AppError("المستخدم لم يعد موجودا!", 400));
+    res.clearCookie(COOKIE_NAME, COOKIE_CONFIG);
+    res.clearCookie("amal-oauth-session");
+    return next(
+      new AppError(
+        "المستخدم لم يعد موجودا! يرجي حذف بيانات الصفحة او اعادة التحميل",
+        400
+      )
+    );
   }
   // is the user password has not been changed after the token iat;
   if (currentUser.isPasswordChangedAfter(iat)) {
+    res.clearCookie(COOKIE_NAME, COOKIE_CONFIG);
+    res.clearCookie("amal-oauth-session");
     return next(
       new AppError("تم تغيير كلمة المرور، يرجى تسجيل الدخول مرة أخرى.", 400)
     );
