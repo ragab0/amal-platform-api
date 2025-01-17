@@ -1,6 +1,9 @@
 const { NODE_ENV, FRONTEND_URL } = process.env;
 
-const frontEndDomain = new URL(FRONTEND_URL).hostname;
+let frontEndDomain = new URL(FRONTEND_URL).hostname;
+frontEndDomain = frontEndDomain.startsWith("www.")
+  ? frontEndDomain.slice(3)
+  : frontEndDomain;
 console.log("HEADER DOMAIN IS:", frontEndDomain);
 
 const COOKIE_CONFIG = {
