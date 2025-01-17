@@ -1,3 +1,5 @@
+const CV = require("../../models/cvModel");
+
 const systemPrompt = {
   content: `You are a professional CV writer helping to create professional CVs that are compatible with ATS systems.
     Your task is to help the user by generating a professional description in Arabic. Format your responses
@@ -17,7 +19,7 @@ const systemPrompt = {
   role: "system",
 };
 
-const generalContent = (name = "experience", data, user) => ({
+const generalContent = (name = "experience", data) => ({
   content: `
     Write a professional description for my ${name} which is ${JSON.stringify(
     data
@@ -50,7 +52,10 @@ const generatePrompts = {
       data,
       _
     ),
-  about: (data, _) => generalContent("about", data, _),
+  about: (_, user) =>
+    generalContent("about", {
+      myHeadline: user.headline,
+    }),
   skillsGeneralDesc: (data, _) => generalContent("skills", data, _),
   interests: (data, _) =>
     generalContent(

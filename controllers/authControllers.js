@@ -325,6 +325,7 @@ const forgotPassword = catchAsyncMiddle(async function (
   // Find user and generate reset token
   const user = await User.findOne({ email });
   if (!user) {
+    console.log("DEV: No user found with email:", email);
     // return next(new AppError("لا يوجد مستخدم بهذا البريد الإلكتروني", 400));
     return sendResult(
       res,

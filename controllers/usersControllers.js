@@ -49,7 +49,7 @@ exports.updateUser = catchAsyncMiddle(async (req, res, next) => {
   );
 
   // MAKE the confirmPassword undefined in case equals password, using save to run hashing;
-  if ("accountInfo" === req.query.updateSet) {
+  if (req.query.updateSet === "accountInfo") {
     if (filteredBody.password !== filteredBody.passwordConfirm) {
       return next(new AppError("كلمة المرور غير متطابقة", 400));
     }
@@ -57,6 +57,7 @@ exports.updateUser = catchAsyncMiddle(async (req, res, next) => {
     user.save({ validateBeforeSave: true, validateModifiedOnly: true });
     delete filteredBody.password;
     delete filteredBody.passwordConfirm;
+  } else if (req.query.updateSet === "image") {
   }
 
   let newUser;
