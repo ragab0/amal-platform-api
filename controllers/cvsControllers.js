@@ -54,29 +54,22 @@ exports.createCV = catchAsyncMiddle(async (req, res, next) => {
   sendResult(res, cv);
 });
 
-// Controller-Level authorization - admin anyone, user only himself;
+// Protected middle;
 exports.updateCV = catchAsyncMiddle(async (req, res, next) => {
-  let cv;
-  if (req.user.role === "admin") {
-    cv = await CV.findOneAndUpdate(
-      req.params.cvId?.length === 24
-        ? { _id: req.params.cvId }
-        : { user: req.user._id },
-      req.body,
-      {
-        runValidators: true,
-        new: true,
-      }
-    );
-  } else {
-    if (req.body.isActive !== undefined) {
-      delete req.body.isActive; // Prevent changing isActive through update BY THE USER
-    }
-    cv = await CV.findOneAndUpdate({ user: req.user._id }, req.body, {
+  // Get the field name and value from req.body
+  const [fieldName] = Object.keys(req.body);
+  if (!fieldName) {
+    return next(new AppError("يرجى تحديد البيانات المراد تحديثها", 400));
+  }
+  const cv = await CV.findOneAndUpdate(
+    { user: req.user._id },
+    { $set: { [fieldName]: req.body[fieldName] } },
+    {
       runValidators: true,
       new: true,
-    });
-  }
+      select: fieldName, // Select only the updated field
+    }
+  );
 
   if (!cv) {
     return next(
@@ -84,7 +77,8 @@ exports.updateCV = catchAsyncMiddle(async (req, res, next) => {
     );
   }
 
-  sendResult(res, cv);
+  // Return only the updated field
+  sendResult(res, { [fieldName]: cv[fieldName] });
 });
 
 // Route-Level authroization && Soft delete;

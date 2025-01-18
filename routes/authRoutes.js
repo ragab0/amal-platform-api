@@ -1,8 +1,8 @@
 const authControllers = require("../controllers/authControllers");
+const oauthControllers = require("../controllers/oauthControllers");
 const passport = require("passport");
 const authRouter = require("express").Router();
 const { authLimiter } = require("../configs/limiter");
-const { FRONTEND_URL } = process.env;
 
 /* public routes - may with limiter (4) */
 authRouter.post("/signup", authLimiter, authControllers.signup);
@@ -32,9 +32,7 @@ authRouter.get(
 );
 authRouter.get(
   "/google/callback",
-  passport.authenticate("google", {
-    failureRedirect: `${FRONTEND_URL}/auth/callback?auth=error&provider=google`,
-  }),
+  oauthControllers.handleGoogleCallback,
   authControllers.providerCallback
 );
 
@@ -42,9 +40,7 @@ authRouter.get(
 authRouter.get("/linkedin", passport.authenticate("linkedin"));
 authRouter.get(
   "/linkedin/callback",
-  passport.authenticate("linkedin", {
-    failureRedirect: `${FRONTEND_URL}/auth/callback?auth=error&provider=linkedin`,
-  }),
+  oauthControllers.handleLinkedInCallback,
   authControllers.providerCallback
 );
 
