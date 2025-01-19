@@ -4,7 +4,7 @@ let frontEndDomain = new URL(FRONTEND_URL).hostname;
 frontEndDomain = frontEndDomain.startsWith("www.")
   ? frontEndDomain.slice(3)
   : frontEndDomain;
-console.log("HEADER DOMAIN IS:", frontEndDomain);
+console.log("FRONT_END IS:", FRONTEND_URL, "HEADER DOMAIN IS:", frontEndDomain);
 
 const COOKIE_CONFIG = {
   httpOnly: true,

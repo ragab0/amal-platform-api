@@ -14,7 +14,10 @@ module.exports = function mainErrorController(err, req, res, next) {
       err = handleMongooseError(err);
     } else if (["JsonWebTokenError", "TokenExpiredError"].includes(err.name)) {
       err = handleJWTErrors(err);
-    } else if (err.name === "PayloadTooLargeError") {
+    } else if (
+      err.name === "PayloadTooLargeError" ||
+      err.code === "LIMIT_FIELD_VALUE"
+    ) {
       err = handlePayloadError(err);
     }
 

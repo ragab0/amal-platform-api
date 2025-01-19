@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/ragab0/amal-platform-api#readme",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.731.1",
     "@google/generative-ai": "^0.21.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.5",

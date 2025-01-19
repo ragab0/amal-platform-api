@@ -23,6 +23,7 @@ const aiRoutes = require("./routes/aiRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const notificationRoutes = require("./routes/notificationsRoutes");
 const statsRoutes = require("./routes/statsRoutes");
+const imageRoutes = require("./routes/imageRoutes");
 // const linkedinDataRouter = require('./routes/linkedinDataRoutes');
 const { corsOptions } = require("./configs/cors");
 const { apiLimiter } = require("./configs/limiter");
@@ -30,10 +31,8 @@ const { apiLimiter } = require("./configs/limiter");
 const app = express();
 app.set("trust proxy", 1);
 app.use(helmet());
-// app.use(express.json({ limit: "15kb" }));
-app.use(express.json());
-// app.use(express.urlencoded({ extended: true, limit: "15kb" }));
-// app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "15kb" }));
+app.use(express.urlencoded({ extended: true, limit: "15kb" }));
 app.use(cookieParser());
 app.use(mongoSanitize()); // Data sanitization against NoSQL query injection
 app.use(xss()); // Data sanitization against XSS
@@ -58,6 +57,7 @@ app.use("/api/v1/reviews", reviewsRoutes);
 app.use("/api/v1/chats", chatRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/admin/stats", statsRoutes);
+app.use("/api/v1/images", imageRoutes);
 
 // app.use("/api/v1/linkedin-data", linkedinDataRouter);
 

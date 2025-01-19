@@ -19,9 +19,19 @@ module.exports = matchMediayIoEventHandlers = function (myIo) {
       console.log(`Welcome........Joined admin room: admin-updates`);
     }
 
-    socket.on("join_room", function ({ roomId }) {
+    socket.on("join_room", async function ({ roomId }) {
       if (socket.currentUserDecode.role === "admin" && roomId) {
         socket.join(roomId);
+        // Reset unread count when admin joins
+        const room = await checkRoomAccess(socket, roomId);
+        if (room) {
+          room.unreadCount = 0;
+          myIo.to("admin-updates").emit("new_unread_count", {
+            roomId,
+            unreadCount: 0,
+          });
+          await room.save();
+        }
       }
     });
 
@@ -37,8 +47,6 @@ module.exports = matchMediayIoEventHandlers = function (myIo) {
       async function handleMessage({ roomId, msgData: { text } }) {
         try {
           const targetRoom = await checkRoomAccess(socket, roomId);
-          console.log("message", roomId, text, socket.currentUserDecode.role);
-
           const message = await Message.create({
             room: targetRoom._id,
             sender: socket.currentUserDecode.id,
@@ -47,9 +55,16 @@ module.exports = matchMediayIoEventHandlers = function (myIo) {
 
           // Update room status
           targetRoom.lastMessage = message._id;
-          targetRoom.isActive = true;
+          if (!targetRoom.isActive) {
+            targetRoom.isActive = true;
+            myIo.to("admin-updates").emit("new_room_status", targetRoom);
+          }
           if (socket.currentUserDecode.role !== "admin") {
             targetRoom.unreadCount++;
+            myIo.to("admin-updates").emit("new_unread_count", {
+              roomId: targetRoom._id.toString(),
+              unreadCount: targetRoom.unreadCount,
+            });
           } else {
             const notification = await Notification.create({
               recipient: targetRoom.user,
@@ -66,7 +81,7 @@ module.exports = matchMediayIoEventHandlers = function (myIo) {
           // Emit message only to the specific room
           myIo.to(targetRoom._id.toString()).emit("new_message", message);
           // Notify admins about room update
-          myIo.to("admin-updates").emit("rooms_last_msg_updated", message);
+          myIo.to("admin-updates").emit("new_last_msg", message);
         } catch (error) {
           console.log("MSG ERROR:", error);
           socket.emit("error", {
@@ -108,16 +123,11 @@ module.exports = matchMediayIoEventHandlers = function (myIo) {
 
     // Request updated room list (for admin reconnection)
     socket.on("get_room_list", async function () {
-      if (socket.currentUserDecode.role === "admin") {
-        try {
-          const rooms = await ChatRoom.find({ isActive: true });
-          socket.emit("room_list_updated", rooms);
-        } catch (error) {
-          socket.emit("error", {
-            message: error.message || "حدث خطأ أثناء إرسال قائمة الغرف",
-          });
-        }
-      }
+      const rooms = await ChatRoom.find({ isActive: true }).sort(
+        "-unreadCount"
+      );
+      // socket.emit("new_list", rooms);
+      myIo.to("admin-updates").emit("new_list", rooms);
     });
 
     /** Real-Time notification system */
@@ -159,7 +169,7 @@ module.exports = matchMediayIoEventHandlers = function (myIo) {
           recipient: socket.currentUserDecode.id,
           read: false,
         });
-        socket.emit("unread_count_updated", { count });
+        socket.emit("new_unread_count", { count });
       } catch (error) {
         socket.emit("error", {
           message: error.message || "حدث خطأ أثناء تحديث حالة الإشعار",
@@ -179,7 +189,7 @@ module.exports = matchMediayIoEventHandlers = function (myIo) {
         );
 
         socket.emit("all_notifications_marked_read");
-        socket.emit("unread_count_updated", { count: 0 });
+        socket.emit("new_unread_count", { count: 0 });
       } catch (error) {
         socket.emit("error", {
           message: error.message || "حدث خطأ أثناء تحديث حالة الإشعارات",

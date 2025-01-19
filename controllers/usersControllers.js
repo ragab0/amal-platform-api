@@ -23,7 +23,7 @@ exports.getAllUsers = catchAsyncMiddle(async (req, res) => {
 const updateSets = {
   basicInfo: ["fname", "lname", "headline", "phone", "country", "photo"],
   accountInfo: ["email", "password", "passwordConfirm"],
-  image: ["photo"],
+  // image: ["photo"],
 };
 
 // Controller-Level authorization - admin himself && anyone, user only himself;
