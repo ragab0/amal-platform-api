@@ -14,13 +14,11 @@ module.exports = function mainErrorController(err, req, res, next) {
       err = handleMongooseError(err);
     } else if (["JsonWebTokenError", "TokenExpiredError"].includes(err.name)) {
       err = handleJWTErrors(err);
-    } else if (
-      err.name === "PayloadTooLargeError" ||
-      err.code === "LIMIT_FIELD_VALUE"
-    ) {
+    } else if (err.name === "PayloadTooLargeError") {
       err = handlePayloadError(err);
+    } else if (err.name === "MulterError") {
+      err = handleMulterError(err);
     }
-
     // openai handlers:
     else if (err.code === "insufficient_quota") {
       console.log("#########################################");
@@ -74,6 +72,15 @@ function handleJWTErrors(err) {
 
 function handlePayloadError(err) {
   return new AppError("حجم البيانات المرسلة كبير جداً", 400); // 413
+}
+
+function handleMulterError(err) {
+  const messages = {
+    LIMIT_FILE_SIZE: "حجم الملف كبير جداً. الحد الأقصى هو 1 ميجابايت",
+    LIMIT_UNEXPECTED_FILE: "نوع الملف غير مدعوم",
+    LIMIT_FIELD_VALUE: "حجم البيانات المرسلة كبير جداً",
+  };
+  return new AppError(messages[err.code] || "خطأ في رفع الملف", 400);
 }
 
 // global handler for dev mode

@@ -24,6 +24,7 @@ const chatRoutes = require("./routes/chatRoutes");
 const notificationRoutes = require("./routes/notificationsRoutes");
 const statsRoutes = require("./routes/statsRoutes");
 const imageRoutes = require("./routes/imageRoutes");
+const paymentRoutes = require("./routes/payment");
 // const linkedinDataRouter = require('./routes/linkedinDataRoutes');
 const { corsOptions } = require("./configs/cors");
 const { apiLimiter } = require("./configs/limiter");
@@ -58,6 +59,7 @@ app.use("/api/v1/chats", chatRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/admin/stats", statsRoutes);
 app.use("/api/v1/images", imageRoutes);
+app.use("/api/v1/payment", paymentRoutes);
 
 // app.use("/api/v1/linkedin-data", linkedinDataRouter);
 

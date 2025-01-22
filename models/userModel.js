@@ -1,11 +1,30 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 
 const currentPlan = new mongoose.Schema({
-  isFree: {
-    type: Boolean,
-    default: true,
+  type: {
+    type: String,
+    enum: ["free", "premium", "premium-plus"],
+    default: "free",
+  },
+  stripeMethod: {
+    stripeCustomerId: String,
+    stripeSubscriptionId: String,
+    lastPaymentIntentId: String,
+  },
+  paypalMethod: {
+    paypalCustomerId: String,
+    paypalSubscriptionId: String,
+    lastPaymentId: String,
+  },
+  amount: {
+    type: Number,
+    required: [true, "المبلغ مطلوب"],
+  },
+  lastPaymentDate: {
+    type: Date,
+    required: [true, "تاريخ اخر دفعة مطلوب"],
   },
   startDate: {
     type: Date,
@@ -14,6 +33,11 @@ const currentPlan = new mongoose.Schema({
   endDate: {
     type: Date,
     required: [true, "تاريخ الانتهاء مطلوب"],
+  },
+  status: {
+    type: String,
+    enum: ["active", "expired", "cancelled"],
+    default: "active",
   },
 });
 
@@ -106,7 +130,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ["user"],
+        values: ["user", "admin"],
         message: "الدور يجب أن يكون مستخدم فقط user",
       },
       default: "user",
@@ -153,7 +177,9 @@ const userSchema = new mongoose.Schema(
       type: Date,
       select: false,
     },
-    photo: String,
+    photo: {
+      type: String,
+    },
     country: String,
     phone: {
       type: String,
@@ -181,7 +207,7 @@ const userSchema = new mongoose.Schema(
     },
     currentPlan: {
       type: currentPlan,
-      select: false,
+      default: {},
     },
   },
   {
@@ -236,6 +262,17 @@ userSchema.methods.clearPasswordResetToken = function () {
   this.passwordResetExpires = undefined;
 };
 
+userSchema.methods.getCurrentPlan = function () {
+  return {
+    type: this.currentPlan.type,
+    amount: this.currentPlan.amount,
+    lastPaymentDate: this.currentPlan.lastPaymentDate,
+    startDate: this.currentPlan.startDate,
+    endDate: this.currentPlan.endDate,
+    status: this.currentPlan.status,
+  };
+};
+
 userSchema.methods.getBasicInfo = async function () {
   await this.populate("myReview");
   return {
@@ -249,6 +286,7 @@ userSchema.methods.getBasicInfo = async function () {
     phone: this.phone,
     language: this.language,
     country: this.country,
+    currentPlan: this.getCurrentPlan(),
     myReview: this.myReview?.getBasicInfo() || null,
   };
 };

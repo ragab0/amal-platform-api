@@ -8,7 +8,7 @@ const router = express.Router();
 router.post(
   "/upload-profile-image",
   authControllers.protect,
-  upload.single("image"),
+  upload.single("file"),
   uploadToS3,
   uploadProfileImage
 );
