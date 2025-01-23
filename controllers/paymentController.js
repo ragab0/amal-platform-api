@@ -124,7 +124,8 @@ const processStripePayment = catchAsyncMiddle(async (req, res, next) => {
 const Env =
   process.env.NODE_ENV === "development"
     ? paypal.core.SandboxEnvironment
-    : paypal.core.LiveEnvironment;
+    : paypal.core.SandboxEnvironment;
+// : paypal.core.LiveEnvironment;
 const paypalClient = new paypal.core.PayPalHttpClient(
   new Env(process.env.PAYPAL_CLIENT_ID, process.env.PAYPAL_SECRET_KEY)
 );
