@@ -98,7 +98,7 @@ const processStripePayment = catchAsyncMiddle(async (req, res, next) => {
         user.currentPlan.stripeMethod = {};
       }
       user.currentPlan.stripeMethod.lastPaymentIntentId = paymentIntent.id;
-      await user.save();
+      await user.save({ validateBeforeSave: false });
 
       return sendResult(res, {
         message: "تم معالجة الدفع بنجاح",
@@ -199,7 +199,7 @@ const processPaypalPayment = catchAsyncMiddle(async (req, res, next) => {
       user.currentPlan.status = "active";
     }
 
-    await user.save();
+    await user.save({ validateBeforeSave: false });
     return sendResult(res, {
       message: "تم معالجة الدفع بنجاح",
       data: user.getCurrentPlan(),
