@@ -1,9 +1,9 @@
-const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const LinkedInStrategy = require("passport-linkedin-oauth2").Strategy;
 const User = require("../models/userModel");
-const Cv = require("../models/cvModel");
 const getValidatedName = require("../utils/validateName");
+const passport = require("passport");
+const LinkedInStrategy = require("passport-linkedin-oauth2").Strategy;
+// const Cv = require("../models/cvModel");
 
 const {
   GOOGLE_CLIENT_ID,
@@ -45,15 +45,15 @@ passport.use(
           });
           await user.save({ validateBeforeSave: false });
           // Create new CV
-          const cv = new Cv({
-            user: user._id,
-            personalInfo: {
-              fullName: `${user.fname} ${user.lname}`,
-              photo: user.photo,
-              email: user.email,
-            },
-          });
-          await cv.save({ validateBeforeSave: false });
+          // const cv = new Cv({
+          //   user: user._id,
+          //   personalInfo: {
+          //     fullName: `${user.fname} ${user.lname}`,
+          //     photo: user.photo,
+          //     email: user.email,
+          //   },
+          // });
+          // await cv.save({ validateBeforeSave: false });
         }
 
         done(null, user);
@@ -96,15 +96,15 @@ passport.use(
           });
           await user.save({ validateBeforeSave: false });
           // Create new CV
-          const cv = new Cv({
-            user: user._id,
-            personalInfo: {
-              fullName: `${user.fname} ${user.lname}`,
-              photo: user.photo,
-              email: user.email,
-            },
-          });
-          await cv.save({ validateBeforeSave: false });
+          // const cv = new Cv({
+          //   user: user._id,
+          //   personalInfo: {
+          //     fullName: `${user.fname} ${user.lname}`,
+          //     photo: user.photo,
+          //     email: user.email,
+          //   },
+          // });
+          // await cv.save({ validateBeforeSave: false });
         }
 
         done(null, user);
