@@ -51,7 +51,7 @@ const signup = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   try {
     session.startTransaction();
     const user = new User(req.body);
-    await user.save({ session });
+    await user.save({ session, validateBeforeSave: false });
 
     // const cv = new CV({
     //   user: user._id,
@@ -389,13 +389,7 @@ const resetPassword = catchAsyncMiddle(async function (
 
     // Update password and clear reset token
     user.setNewPassword(password, true);
-    await user.save({ validateBeforeSave: true, validateModifiedOnly: true });
-    // Only validate password fields
-    const validationOpts = {
-      validateModifiedOnly: true,
-      validateBeforeSave: true,
-    };
-    await user.save(validationOpts);
+    await user.save({ validateBeforeSave: false, validateModifiedOnly: true });
 
     // Log password change
     console.log(
