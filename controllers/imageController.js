@@ -31,6 +31,6 @@ exports.uploadProfileImage = catchAsync(async (req, res, next) => {
   }
 
   req.user.photo = req.fileUrl;
-  await req.user.save();
+  await req.user.save({ validateBeforeSave: false });
   sendResult(res, { photo: req.fileUrl });
 });
