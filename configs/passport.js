@@ -55,6 +55,10 @@ passport.use(
           // });
           // await cv.save({ validateBeforeSave: false });
         }
+        if (!user.isVerified) {
+          user.isVerified = true;
+          await user.save({ validateBeforeSave: false });
+        }
 
         done(null, user);
       } catch (error) {
@@ -106,7 +110,10 @@ passport.use(
           // });
           // await cv.save({ validateBeforeSave: false });
         }
-
+        if (!user.isVerified) {
+          user.isVerified = true;
+          await user.save({ validateBeforeSave: false });
+        }
         done(null, user);
       } catch (error) {
         console.error("LinkedIn auth error:", error);
