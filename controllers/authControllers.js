@@ -212,6 +212,8 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   // Check if email is verified
   // Using 303 See Other to indicate the user should be redirected to a different resource
   if (!user.isVerified) {
+    res.clearCookie(COOKIE_NAME, COOKIE_CONFIG);
+    res.clearCookie("amal-oauth-session");
     return sendResult(
       res,
       {
@@ -240,6 +242,8 @@ const isLogin = catchAsyncMiddle(async function (req = rq, res = rs) {
   if (req.user.isVerified) {
     sendResult(res, await req.user.getBasicInfo());
   } else {
+    res.clearCookie(COOKIE_NAME, COOKIE_CONFIG);
+    res.clearCookie("amal-oauth-session");
     sendResult(res, { isVerified: false }, 401);
   }
 });
