@@ -213,7 +213,7 @@ const login = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   // Using 303 See Other to indicate the user should be redirected to a different resource
   if (!user.isVerified) {
     res.clearCookie(COOKIE_NAME, COOKIE_CONFIG);
-    res.clearCookie("amal-oauth-session");
+    res.clearCookie("nabza-oauth-session");
     return sendResult(
       res,
       {
@@ -243,7 +243,7 @@ const isLogin = catchAsyncMiddle(async function (req = rq, res = rs) {
     sendResult(res, await req.user.getBasicInfo());
   } else {
     res.clearCookie(COOKIE_NAME, COOKIE_CONFIG);
-    res.clearCookie("amal-oauth-session");
+    res.clearCookie("nabza-oauth-session");
     sendResult(res, { isVerified: false }, 401);
   }
 });
@@ -268,7 +268,7 @@ const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   const currentUser = await User.findById(id);
   if (!currentUser) {
     res.clearCookie(COOKIE_NAME, COOKIE_CONFIG);
-    res.clearCookie("amal-oauth-session");
+    res.clearCookie("nabza-oauth-session");
     return next(
       new AppError(
         "المستخدم لم يعد موجودا! يرجي حذف بيانات الصفحة او اعادة التحميل",
@@ -279,7 +279,7 @@ const protect = catchAsyncMiddle(async function (req = rq, res = rs, next) {
   // is the user password has not been changed after the token iat;
   if (currentUser.isPasswordChangedAfter(iat)) {
     res.clearCookie(COOKIE_NAME, COOKIE_CONFIG);
-    res.clearCookie("amal-oauth-session");
+    res.clearCookie("nabza-oauth-session");
     return next(
       new AppError("تم تغيير كلمة المرور، يرجى تسجيل الدخول مرة أخرى.", 400)
     );
@@ -305,7 +305,7 @@ const assignableTo = function (...roles) {
 const logout = catchAsyncMiddle(async function (req = rq, res = rs) {
   // Clear token cookie with all security options
   res.clearCookie(COOKIE_NAME, COOKIE_CONFIG);
-  res.clearCookie("amal-oauth-session");
+  res.clearCookie("nabza-oauth-session");
 
   // If user is logged in, update their instance (I THINK NOT WORK WELL)
   if (req.user) {

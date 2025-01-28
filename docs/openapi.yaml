@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
-  title: AMAL CV Platform API
+  title: Nabza Platform API
   version: 1.0.0
   description: |
-    Comprehensive API for CV creation, user management, and professional networking.
+    Comprehensive API for CV Builder, user management, and professional networking.
 
     # Authentication
     - Most endpoints require authentication via JWT token

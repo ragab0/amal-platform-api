@@ -9,7 +9,7 @@ const sessionConfig = session({
   secret: JWT_SECRET || "ths-is-our-secret-key-for-session",
   resave: false,
   saveUninitialized: false,
-  name: "amal-oauth-session",
+  name: "nabza-oauth-session",
   cookie: {
     ...COOKIE_CONFIG,
     maxAge: 300000, // 5 minutes - just enough for OAuth flow

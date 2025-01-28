@@ -1,5 +1,5 @@
 {
-  "name": "amal-platform-api",
+  "name": "nabza-platform-api",
   "version": "1.0.0",
   "description": "A platform for Cv building ",
   "main": "server.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/ragab0/amal-platform-api.git"
+    "url": "git+ssh://git@github.com/ragab0/nabza-platform-api.git"
   },
   "keywords": [
     "back-end",
@@ -23,9 +23,9 @@
   "author": "ragab0",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ragab0/amal-platform-api/issues"
+    "url": "https://github.com/ragab0/nabza-platform-api/issues"
   },
-  "homepage": "https://github.com/ragab0/amal-platform-api#readme",
+  "homepage": "https://github.com/ragab0/nabza-platform-api#readme",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.731.1",
     "@google/generative-ai": "^0.21.0",

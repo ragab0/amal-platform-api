@@ -233,7 +233,7 @@ const createPaypalOrder = catchAsyncMiddle(async (req, res, next) => {
         },
       ],
       application_context: {
-        brand_name: "عمل",
+        brand_name: "نبذة",
         landing_page: "NO_PREFERENCE",
         user_action: "PAY_NOW",
         return_url: `${process.env.FRONTEND_URL}/profile/current-plan`,
@@ -378,7 +378,7 @@ const createPaypalOrder = catchAsyncMiddle(async (req, res, next) => {
         },
       ],
       application_context: {
-        brand_name: "عمل",
+        brand_name: "نبذة",
         landing_page: "NO_PREFERENCE",
         user_action: "PAY_NOW",
         return_url: `${process.env.FRONTEND_URL}/profile/current-plan`,

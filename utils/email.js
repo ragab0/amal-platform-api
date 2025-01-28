@@ -40,7 +40,7 @@ class Email {
       const transporter = await this.createTransporter();
 
       const mailOptions = {
-        from: `عمل <${EMAIL_USERNAME}>`,
+        from: `نبذة <${EMAIL_USERNAME}>`,
         to: email,
         subject,
         text,
@@ -75,7 +75,7 @@ class Email {
     const html = `
       <div dir="rtl" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h1 style="color: #2c3e50; margin-bottom: 10px;">مرحباً بك في عمل</h1>
+          <h1 style="color: #2c3e50; margin-bottom: 10px;">مرحباً بك في نبذة</h1>
           <p style="color: #34495e; font-size: 16px;">نحن سعداء بانضمامك إلينا</p>
         </div>
         
@@ -93,13 +93,13 @@ class Email {
         
         <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
           <p style="color: #2c3e50; margin-bottom: 5px;">مع تحيات</p>
-          <p style="color: #2c3e50; font-weight: bold;">فريق عمل</p>
+          <p style="color: #2c3e50; font-weight: bold;">فريق نبذة</p>
         </div>
       </div>
     `;
 
     const text = `
-      مرحباً بك في عمل!
+      مرحباً بك في نبذة!
 
       مرحباً ${this.firstName}،
 
@@ -112,7 +112,7 @@ class Email {
       إذا لم تقم بطلب رمز التحقق هذا، يرجى تجاهل هذا البريد الإلكتروني.
 
       مع تحيات
-      فريق عمل
+      فريق نبذة
     `;
 
     await this.send({
@@ -159,7 +159,7 @@ class Email {
           
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
             <p style="color: #2c3e50; margin-bottom: 5px;">مع تحيات</p>
-            <p style="color: #2c3e50; font-weight: bold;">فريق عمل</p>
+            <p style="color: #2c3e50; font-weight: bold;">فريق نبذة</p>
           </div>
         </div>
       `,
